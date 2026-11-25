@@ -8,6 +8,34 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
+## Unreleased
+
+### Added
+
+- **A Debian package, so a receiver installs ABMod with `apt-get install`.**
+  The 31 files ABMod replaces are handled with **dpkg diversions** rather than
+  copied over: the upstream file is kept beside its replacement as
+  `<name>.openwebrx-original`, `apt-get remove abmod` genuinely restores it,
+  and a later `openwebrx` upgrade writes to the diverted name instead of
+  silently overwriting the modification. The 19 new files just install.
+
+  It **refuses to install over an ABMod put there by hand**, naming the files,
+  because diverting an already-modified file would record the modified copy as
+  the original — and the damage only shows up at removal time, long after.
+  `apt-get install --reinstall openwebrx` first, then the package.
+
+  `Depends: openwebrx (>= 1.2.2), openwebrx (<< 1.2.3)`, which holds OpenWebRX
+  at the version ABMod was built against. Whole files are replaced, so a
+  different OpenWebRX is a different set of files; the constraint states that
+  rather than hiding it.
+
+  `packaging/build-deb.sh` builds it anywhere with `dpkg-dev`, the receiver
+  included, and refuses to produce a package it cannot vouch for: it checks the
+  diverted list against the `openwebrx` installed on the build machine, counts
+  what reached the archive against the source tree, and rejects stray macOS
+  AppleDouble files. `packaging/repo/build-repo.sh` turns the result into a
+  signed APT repository. See [installing with apt-get](docs/en/apt.md).
+
 ## v1.0.1 — 2026-11-25
 
 ### Fixed
@@ -30,34 +58,6 @@ Dates are the day the change was finished and running on a live receiver.
   server copy was written and then orphaned. Gone from `connection.py`
   (`_recall_memory`, `_find_memory`, `write_memory_recalled`) and from
   `openwebrx.js` (`on_memory_recalled` and its case).
-
-## Unreleased
-
-### Added
-
-- **A Debian package, so a receiver installs ABMod with `apt-get install`.**
-  The 31 files ABMod replaces are handled with **dpkg diversions** rather than
-  copied over: the upstream file is kept beside its replacement as
-  `<name>.openwebrx-original`, `apt-get remove abmod` genuinely restores it,
-  and a later `openwebrx` upgrade writes to the diverted name instead of
-  silently overwriting the modification. The 19 new files just install.
-  .
-  It **refuses to install over an ABMod put there by hand**, naming the files,
-  because diverting an already-modified file would record the modified copy as
-  the original — and the damage only shows up at removal time, long after.
-  `apt-get install --reinstall openwebrx` first, then the package.
-  .
-  `Depends: openwebrx (>= 1.2.2), openwebrx (<< 1.2.3)`, which holds OpenWebRX
-  at the version ABMod was built against. Whole files are replaced, so a
-  different OpenWebRX is a different set of files; the constraint states that
-  rather than hiding it.
-  .
-  `packaging/build-deb.sh` builds it anywhere with `dpkg-dev`, the receiver
-  included, and refuses to produce a package it cannot vouch for: it checks the
-  diverted list against the `openwebrx` installed on the build machine, counts
-  what reached the archive against the source tree, and rejects stray macOS
-  AppleDouble files. `packaging/repo/build-repo.sh` turns the result into a
-  signed APT repository. See [installing with apt-get](docs/en/apt.md).
 
 ## v1.0.0 — 2026-11-25
 
