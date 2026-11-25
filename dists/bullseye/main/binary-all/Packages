@@ -1,15 +1,15 @@
 Package: abmod
-Version: 1.0.8
+Version: 1.0.9
 Architecture: all
 Maintainer: IU2QDA <iu2qda@users.noreply.github.com>
 Installed-Size: 768
 Depends: openwebrx (>= 1.2.2), openwebrx (<< 1.2.3), python3, python3-numpy
 Recommends: python3-xlrd
-Filename: pool/main/abmod_1.0.8_all.deb
-Size: 127852
-MD5sum: 7dbb9a1896710365c085165a0a3c240b
-SHA1: 43e18687f6e77d9a1862c7d21dd0f58568ade5e4
-SHA256: 77addb5d75adcfd7429475859e535af5641adb3807e256750ce1fa6926edc3d5
+Filename: pool/main/abmod_1.0.9_all.deb
+Size: 128628
+MD5sum: 27ab655850e7bc73e612acdf5636a801
+SHA1: 801095a487ab19597a6e4b0eecdc07375d0b4ed9
+SHA256: 93aec1424917f6ee425e9b4f08388eedb49d65d66464022f7c43d123efe9617c
 Section: hamradio
 Priority: optional
 Homepage: https://www.iu2qda.it
