@@ -8,6 +8,29 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
+## v1.0.1 — 2026-11-25
+
+### Fixed
+
+- **The centre frequency box lost the 12.5 kHz raster.** It was written with
+  three decimals of a megahertz, which is kilohertz resolution, so 145.0125 MHz
+  came out 145.012 — not a channel. It was not only cosmetic: the step buttons
+  read that box back, so one rewrite put the tuned frequency 500 Hz off and
+  every later step kept the error. One helper now formats every frequency the
+  interface writes, printing the shortest text that reads back as the same
+  frequency, so a 6.25 kHz raster survives too. Checked across the whole
+  12.5 kHz raster from 144 to 146 MHz: 161 frequencies, all round-tripping
+  unchanged. The box also follows the unit selector now instead of always
+  assuming megahertz.
+- **Dead `recallmemory` path removed**, both halves of it. The server
+  authorised the message, dispatched it, tuned the SDR and answered
+  `memory_recalled`, and the browser had a handler waiting for that answer —
+  but nothing has ever sent the message: clicking a bookmark moves the
+  demodulator client-side, which is the correct behaviour and the reason the
+  server copy was written and then orphaned. Gone from `connection.py`
+  (`_recall_memory`, `_find_memory`, `write_memory_recalled`) and from
+  `openwebrx.js` (`on_memory_recalled` and its case).
+
 ## v1.0.0 — 2026-11-25
 
 First published release. Running on two Raspberry Pi 3 receivers.

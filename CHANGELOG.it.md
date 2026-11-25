@@ -9,6 +9,31 @@ ABMod è costruito e provato. Le ragioni delle scelte sono in
 Le date sono il giorno in cui la modifica è stata finita e messa su un
 ricevitore vero.
 
+## v1.0.1 — 25 novembre 2026
+
+### Corretto
+
+- **La casella della frequenza centrale perdeva il raster da 12,5 kHz.** Veniva
+  scritta con tre decimali di megahertz, cioè risoluzione al kilohertz, quindi
+  145,0125 MHz diventava 145,012 — che non è un canale. E non era solo
+  estetica: i pulsanti di passo rileggono quella casella, quindi una riscrittura
+  portava la frequenza sintonizzata 500 Hz fuori e ogni passo successivo si
+  teneva l'errore. Ora un'unica funzione formatta tutte le frequenze che
+  l'interfaccia scrive, stampando il testo più corto che si rilegge come la
+  stessa frequenza, così sopravvive anche un raster da 6,25 kHz. Provato su
+  tutto il raster da 12,5 kHz fra 144 e 146 MHz: 161 frequenze, tutte tornano
+  identiche. La casella ora segue anche il selettore dell'unità, invece di dare
+  per scontati i megahertz.
+- **Rimosso il percorso morto `recallmemory`**, da tutti e due i lati. Il
+  server autorizzava il messaggio, lo smistava, sintonizzava l'SDR e rispondeva
+  `memory_recalled`, e il browser aveva un handler in attesa di quella
+  risposta — ma quel messaggio non lo ha mai mandato nessuno: cliccare una
+  memoria muove il demodulatore lato client, che è il comportamento giusto ed
+  è il motivo per cui la copia lato server era stata scritta e poi
+  abbandonata. Via da `connection.py` (`_recall_memory`, `_find_memory`,
+  `write_memory_recalled`) e da `openwebrx.js` (`on_memory_recalled` e il suo
+  case).
+
 ## v1.0.0 — 25 novembre 2026
 
 Prima versione pubblicata. In funzione su due ricevitori Raspberry Pi 3.

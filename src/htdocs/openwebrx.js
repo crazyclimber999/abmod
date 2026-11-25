@@ -740,7 +740,9 @@ function on_ws_recv(evt) {
                             bandwidth = config['samp_rate'];
                         if ('center_freq' in config) {
                             center_freq = config['center_freq'];
-                            $('#openwebrx-frequency-input').val((center_freq / 1000000).toFixed(3));
+                            // the box carries whatever unit the selector shows
+                            var freq_unit = parseInt($('#openwebrx-freq-unit').val()) || 1000000;
+                            $('#openwebrx-frequency-input').val(format_freq_value(center_freq, freq_unit));
                         }
                         if ('fft_size' in config) {
                             fft_size = config['fft_size'];
@@ -892,9 +894,6 @@ function on_ws_recv(evt) {
                         break;
                     case "memory_deleted":
                         on_memory_deleted(json['value']);
-                        break;
-                    case "memory_recalled":
-                        on_memory_recalled(json['value']);
                         break;
                     default:
                         console.warn('received message of unknown type: ' + json['type']);
@@ -1945,9 +1944,30 @@ function delete_memory(name) {
     }
 }
 
+// One place decides how a frequency is written out, so the centre frequency box
+// and the rest of the interface cannot disagree about the same number.
+//
+// Three decimals of a megahertz is kilohertz resolution, and VHF is on a
+// 12.5 kHz raster: 145.0125 MHz comes out 145.013, which is not a channel. That
+// is not only cosmetic - the step buttons read the box back, so one rewrite put
+// every later step 500 Hz off a frequency nobody had tuned.
+//
+// Letting the number print itself gives the shortest text that reads back as
+// the same frequency, so 145.0125 survives and so does a 6.25 kHz raster. The
+// padding is only there to keep the familiar 145.700 for the round ones.
+function format_freq_value(hz, unit) {
+    unit = unit || 1000000;
+    var value = hz / unit;
+    var out = String(value);
+    if (unit >= 1000000) {
+        var decimals = (out.split('.')[1] || '').length;
+        if (decimals < 3) out = value.toFixed(3);
+    }
+    return out;
+}
+
 function format_memory_freq(hz) {
-    // bookmarks on a 12.5 kHz raster lose a digit with 3 decimals (145.7875 -> 145.787)
-    return (hz / 1000000).toFixed(hz % 1000 === 0 ? 3 : 4);
+    return format_freq_value(hz, 1000000);
 }
 
 var memory_cache = [];
@@ -2101,22 +2121,6 @@ function on_memory_saved(memory) {
 function on_memory_deleted(name) {
     divlog('Bookmark deleted: ' + name);
     load_memories();
-}
-
-function on_memory_recalled(memory) {
-    var freq_mhz = format_memory_freq(memory.frequency);
-    if (memory.modulation) {
-        // Deferred: the config message that follows a center_freq change
-        // reapplies the profile modulation and would overwrite this one.
-        setTimeout(function() {
-            try {
-                $('#openwebrx-panel-receiver').demodulatorPanel().setMode(memory.modulation);
-            } catch (e) {
-                divlog('Modulation not applied: ' + memory.modulation);
-            }
-        }, 600);
-    }
-    divlog('Bookmark tuned: ' + memory.name + ' -> ' + freq_mhz + ' MHz ' + (memory.modulation || ''));
 }
 
 function update_freq_step() {

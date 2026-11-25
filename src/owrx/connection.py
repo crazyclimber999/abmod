@@ -365,7 +365,7 @@ class OpenWebRxReceiverClient(OpenWebRxClient, SdrSourceEventClient):
                         self._save_bandplan_entry(message["params"])
                     else:
                         self._delete_bandplan_entry(message["params"])
-                elif message["type"] in ("getmemories", "savememory", "deletememory", "recallmemory"):
+                elif message["type"] in ("getmemories", "savememory", "deletememory"):
                     # Hiding the button in the template is not enough: without this
                     # check the bookmarks would stay readable and writable by anyone
                     # able to send the message over the websocket.
@@ -379,9 +379,6 @@ class OpenWebRxReceiverClient(OpenWebRxClient, SdrSourceEventClient):
                     elif message["type"] == "deletememory":
                         if "params" in message and "name" in message["params"]:
                             self._delete_memory(message["params"]["name"])
-                    elif message["type"] == "recallmemory":
-                        if "params" in message and "name" in message["params"]:
-                            self._recall_memory(message["params"]["name"])
                 elif message["type"] == "connectionproperties":
                     if "params" in message:
                         self.connectionProperties = message["params"]
@@ -564,19 +561,6 @@ class OpenWebRxReceiverClient(OpenWebRxClient, SdrSourceEventClient):
         except Exception as e:
             logger.warning("Failed to delete bookmark: %s", e)
 
-    def _recall_memory(self, name):
-        memory = self._find_memory(name)
-        if memory:
-            freq = memory["frequency"]
-            if self.sdr is not None:
-                self.sdr.props["center_freq"] = freq
-                dsp = self.getDsp()
-                if dsp is not None:
-                    dsp.props["center_freq"] = freq
-            self.write_config({"center_freq": freq})
-            self.write_memory_recalled(memory)
-            logger.debug("Bookmark recalled: %s -> %d Hz", name, freq)
-
     def _load_memories(self):
         try:
             return [
@@ -586,12 +570,6 @@ class OpenWebRxReceiverClient(OpenWebRxClient, SdrSourceEventClient):
         except Exception as e:
             logger.warning("Failed to load bookmarks: %s", e)
             return []
-
-    def _find_memory(self, name):
-        for m in self._load_memories():
-            if m.get("name") == name:
-                return m
-        return None
 
     def setSdr(self, id=None):
         next = None
@@ -702,9 +680,6 @@ class OpenWebRxReceiverClient(OpenWebRxClient, SdrSourceEventClient):
 
     def write_memory_deleted(self, name):
         self.send({"type": "memory_deleted", "value": name})
-
-    def write_memory_recalled(self, memory):
-        self.send({"type": "memory_recalled", "value": memory})
 
     def write_features(self, features):
         self.send({"type": "features", "value": features})
