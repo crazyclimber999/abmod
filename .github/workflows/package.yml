@@ -83,19 +83,26 @@ jobs:
         with:
           name: abmod-deb
 
+      # The notes are built with printf rather than written inline: a literal
+      # block scalar ends at the first line indented less than the block, and
+      # release notes want lines that look indented.
       - name: Attach the package to the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" abmod_*_all.deb \
-            --repo "${GITHUB_REPOSITORY}" \
-            --title "ABMod ${GITHUB_REF_NAME}" \
-            --notes "The package is attached. It installs with:
-
-    sudo apt-get install ./abmod_*_all.deb
-
-For \`apt-get install abmod\` from the repository, see the [APT repository](https://crazyclimber999.github.io/abmod/).
-
-Read [the changelog](https://github.com/crazyclimber999/abmod/blob/main/CHANGELOG.md) for what changed." \
-            || gh release upload "${GITHUB_REF_NAME}" abmod_*_all.deb --clobber \
-                 --repo "${GITHUB_REPOSITORY}"
+          printf '%s\n' \
+            'The package is attached. It installs from the file with:' \
+            '' \
+            '    sudo apt-get install ./abmod_*_all.deb' \
+            '' \
+            'For `apt-get install abmod` from the repository, see' \
+            '<https://crazyclimber999.github.io/abmod/>.' \
+            '' \
+            'What changed is in [the changelog](https://github.com/crazyclimber999/abmod/blob/main/CHANGELOG.md).' \
+            > notes.md
+          gh release create "$GITHUB_REF_NAME" abmod_*_all.deb \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "ABMod $GITHUB_REF_NAME" \
+            --notes-file notes.md \
+          || gh release upload "$GITHUB_REF_NAME" abmod_*_all.deb \
+            --repo "$GITHUB_REPOSITORY" --clobber
