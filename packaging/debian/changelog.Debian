@@ -1,3 +1,24 @@
+abmod (1.0.10) bullseye; urgency=low
+
+  * Send the direct sampling state from handleSdrAvailable, so the DS badge
+    survives a page reload.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Thu, 26 Nov 2026 01:30:00 +0000
+
+abmod (1.0.9) bullseye; urgency=low
+
+  * Fix the direct sampling switch leaving the receiver on the wrong
+    frequency: the connector was restarted before the new frequency was set.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Thu, 26 Nov 2026 01:05:00 +0000
+
+abmod (1.0.8) bullseye; urgency=low
+
+  * Switch the RTL-SDR into direct sampling automatically below 24 MHz, and
+    back out above it. Costs a connector restart, announced in the log.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Thu, 26 Nov 2026 00:40:00 +0000
+
 abmod (1.0.7) bullseye; urgency=low
 
   * Remove the 5-tone prefix box added in 1.0.6, at the operator's request.

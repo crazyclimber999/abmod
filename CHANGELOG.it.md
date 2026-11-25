@@ -9,6 +9,76 @@ ABMod è costruito e provato. Le ragioni delle scelte sono in
 Le date sono il giorno in cui la modifica è stata finita e messa su un
 ricevitore vero.
 
+## v1.0.10 — 26 novembre 2026
+
+### Corretto
+
+- **L'indicatore DS spariva ricaricando la pagina**, anche col ricevitore
+  ancora sotto il limite del tuner. Veniva mandato con la configurazione
+  iniziale, che viene messa insieme prima che il dispositivo sia agganciato e
+  quindi non puo ancora dire quale ingresso sia in uso. Ora parte da
+  `handleSdrAvailable`, che gira alla prima connessione e di nuovo dopo ogni
+  riavvio della sorgente.
+
+## v1.0.9 — 26 novembre 2026
+
+### Corretto
+
+- **Il passaggio al campionamento diretto lasciava il ricevitore sulla
+  frequenza sbagliata.** La modalita veniva decisa e il connector riavviato
+  *prima* che la nuova frequenza centrale fosse scritta, quindi ripartiva sulla
+  vecchia frequenza con la nuova modalita e andava poi risintonizzato sul
+  socket di controllo: cosa che, per un tuner a cui si chiede di arrivare a
+  6 MHz, non funzionava mai. Misurato su un ricevitore vero: finiva a 15,001
+  MHz, ne la frequenza da cui veniva ne quella richiesta.
+
+  Ora la frequenza entra per prima nelle proprieta. Il connector costruisce la
+  sua riga di comando da quelle, quindi riparte gia sintonizzato e gia nella
+  modalita giusta, e non serve nessuna risintonizzazione.
+
+- **Il waterfall si bloccava dopo il passaggio.** La connessione originale
+  ascolta solo il passaggio a RUNNING, che basta finche una sorgente non si
+  ferma mai con un ascoltatore attaccato. Riavviare il dispositivo per il
+  campionamento diretto fa esattamente quello, quindi la vecchia catena dsp
+  restava collegata a un processo sparito e `handleSdrAvailable` riconfigurava
+  quella catena morta invece di costruirne una nuova. Ora la connessione
+  smonta il dsp anche su STOPPING, e la ricostruzione su RUNNING fa il resto.
+
+- **L'indicatore DS viene aggiornato a ogni sintonia**, non solo quando la
+  modalita cambia, cosi resta onesto anche se un altro ascoltatore ha mosso la
+  radio.
+
+## v1.0.8 — 26 novembre 2026
+
+### Aggiunto
+
+- **Il campionamento diretto si attiva da solo sotto il limite del tuner.** Un
+  R820T non scende sotto i 24 MHz circa; sotto, l'unica via d'ingresso e
+  l'ADC. Sintonizzando il ricevitore la, il dispositivo passa al campionamento
+  diretto sul ramo Q, e risalendo torna indietro.
+
+  La decisione si prende sulla **cima** della finestra campionata, non sul suo
+  centro: una finestra centrata a 23 MHz arriva a 24,25 e il tuner la copre
+  tutta, quindi decidere sul centro regalerebbe spettro buono a un ingresso che
+  non ha nessun filtro davanti.
+
+  Costa un riavvio, e non viene nascosto. Il campionamento diretto e
+  un'opzione della riga di comando del connector, mentre la frequenza viaggia
+  a caldo sul socket di controllo: il processo deve ripartire.
+  `ConnectorSource` manda ogni cambio di proprieta su quel socket e non
+  riavvia mai, e cambiare profilo fa lo stesso. Il ricevitore perde quindi
+  qualche secondo di audio, e lo dice nel log prima di farlo.
+
+  Misurato prima sull'hardware, con `rtl_connector` stesso: a 6 e 7 MHz col
+  campionamento diretto attivo ci sono righe discrete a **29 dB sopra il
+  fondo**, contro un controllo sui 2 metri che si comporta esattamente come
+  deve. Un ramo Q scollegato non lo fa.
+
+  Mentre e attivo, accanto al pulsante Set compare un riquadro **DS** delle sue
+  stesse dimensioni, cosi il ricevitore dice da quale ingresso sta ascoltando
+  invece di lasciartelo dedurre dalla frequenza. Viaggia con la configurazione,
+  quindi e giusto anche per chi si collega a un ricevitore gia la sotto.
+
 ## v1.0.7 — 25 novembre 2026
 
 ### Rimosso

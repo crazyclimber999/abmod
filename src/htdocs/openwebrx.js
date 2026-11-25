@@ -810,6 +810,11 @@ function on_ws_recv(evt) {
 
                         if ('samp_rate' in config)
                             bandwidth = config['samp_rate'];
+                        if ('direct_sampling' in config) {
+                            // 2 e il ramo Q, 1 quello I: in entrambi i casi la
+                            // radio sta usando l'ingresso dell'ADC
+                            $('#openwebrx-ds').toggle(!!config['direct_sampling']);
+                        }
                         if ('center_freq' in config) {
                             center_freq = config['center_freq'];
                             // the box carries whatever unit the selector shows

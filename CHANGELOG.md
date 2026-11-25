@@ -8,6 +8,74 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
+## v1.0.10 — 2026-11-26
+
+### Fixed
+
+- **The DS badge disappeared on a page reload**, even with the receiver still
+  below the tuner's floor. It was being sent with the initial configuration,
+  which is assembled before the device is attached and therefore cannot yet
+  say which input is in use. It now goes out from `handleSdrAvailable`, which
+  runs on the first connection and again after every source restart.
+
+## v1.0.9 — 2026-11-26
+
+### Fixed
+
+- **The direct sampling switch left the receiver on the wrong frequency.** The
+  mode was decided and the connector restarted *before* the new centre
+  frequency was written, so it came up on the old frequency in the new mode and
+  then had to be retuned over the control socket - which for a tuner asked to
+  reach 6 MHz never worked. Measured on a live receiver: it ended on 15.001
+  MHz, neither the frequency it left nor the one it was asked for.
+
+  The frequency now goes into the properties first. The connector builds its
+  command line from those properties, so it comes up already tuned and already
+  in the right mode, and no retune is needed at all.
+
+- **The waterfall froze after the switch.** Upstream's connection only listens
+  for the source becoming RUNNING, which is enough while a source never stops
+  with a listener still attached. Restarting the device for direct sampling
+  does exactly that, so the old dsp chain stayed wired to a process that had
+  gone and `handleSdrAvailable` then reconfigured that same dead chain instead
+  of building a new one. The connection now tears its dsp down on STOPPING as
+  well, and the rebuild on RUNNING does the rest.
+
+- **The DS badge is refreshed on every retune**, not only when the mode
+  changes, so it stays honest even when another listener moved the radio.
+
+## v1.0.8 — 2026-11-26
+
+### Added
+
+- **Direct sampling switches itself on below the tuner's floor.** An R820T
+  cannot tune under about 24 MHz; below that the only way in is the ADC's own
+  input. Tuning the receiver there now puts the device into direct sampling on
+  the Q branch, and coming back above it puts it back.
+
+  The decision is made on the **top** of the sampled window rather than its
+  centre: a window centred at 23 MHz reaches 24.25 and the tuner can serve all
+  of it, so switching on the centre alone would hand perfectly good spectrum to
+  an input that has no filtering in front of it.
+
+  It costs a restart, and that is not hidden. Direct sampling is a command line
+  option of the connector, while frequency travels live over the control
+  socket, so the process has to go round again - `ConnectorSource` sends every
+  property change down that socket and never restarts, and switching profiles
+  does the same. The receiver therefore drops audio for a few seconds, and says
+  so in the log before it does.
+
+  Measured on the hardware first, with `rtl_connector` itself: at 6 and 7 MHz
+  with direct sampling on, discrete lines stand **29 dB above the noise floor**,
+  against a 2m control that behaves exactly as expected. A disconnected Q
+  branch does not do that.
+
+  While it is on, a **DS** badge sits beside the Set button, the same size as
+  it, so the receiver says which input it is listening through rather than
+  leaving you to work it out from the frequency. It is sent with the
+  configuration, so it is also right for someone who connects to a receiver
+  that is already down there.
+
 ## v1.0.7 — 2026-11-25
 
 ### Removed

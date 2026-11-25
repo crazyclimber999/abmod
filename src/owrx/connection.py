@@ -1,4 +1,5 @@
 from owrx.details import ReceiverDetails
+from owrx import autohf
 from owrx.dsp import DspManager
 from owrx.cpu import CpuUsageThread
 from owrx.sdr import SdrService
@@ -245,6 +246,16 @@ class OpenWebRxReceiverClient(OpenWebRxClient, SdrSourceEventClient):
     def onStateChange(self, state: SdrSourceState):
         if state is SdrSourceState.RUNNING:
             self.handleSdrAvailable()
+        elif state is SdrSourceState.STOPPING:
+            # Upstream only listens for RUNNING, which is enough while the
+            # source only ever stops because the last listener left. It is not
+            # enough when the source is restarted underneath a listener who is
+            # still there - switching the device into direct sampling does
+            # exactly that. Without this the old dsp chain stays wired to a
+            # process that has gone, the waterfall freezes, and handleSdrAvailable
+            # then reconfigures that same dead chain instead of building a new
+            # one.
+            self.stopDsp()
 
     def onFail(self):
         logger.warning('SDR device "%s" has failed, selecting new device', self.sdr.getName())
@@ -302,7 +313,33 @@ class OpenWebRxReceiverClient(OpenWebRxClient, SdrSourceEventClient):
                         if self.sdr is not None:
                             try:
                                 freq = int(message["params"]["freq"])
+                                # The frequency goes into the properties FIRST,
+                                # and only then is the sampling mode considered.
+                                # Direct sampling is a command line option, so
+                                # changing it restarts the connector, and the
+                                # connector builds its command line from these
+                                # same properties: set the frequency first and
+                                # it comes up already tuned and already in the
+                                # right mode, in one go.
+                                #
+                                # The other way round - restart, then retune
+                                # over the control socket - leaves the
+                                # connector starting on the OLD frequency in
+                                # the NEW mode, which for a tuner asked to
+                                # reach 6 MHz means it never comes up properly.
+                                # Measured: it ended on 15.001 MHz, neither the
+                                # frequency it left nor the one it was asked
+                                # for.
                                 self.sdr.props["center_freq"] = freq
+                                autohf.adjust(
+                                    self.sdr, freq, announce=self.write_log_message
+                                )
+                                # sempre, non solo quando cambia: cosi
+                                # l'indicatore e corretto anche se un altro
+                                # client ha mosso la radio nel frattempo
+                                self.write_config(
+                                    {"direct_sampling": autohf.current_mode(self.sdr)}
+                                )
                                 dsp = self.getDsp()
                                 if dsp is not None:
                                     dsp.props["center_freq"] = freq
@@ -603,6 +640,14 @@ class OpenWebRxReceiverClient(OpenWebRxClient, SdrSourceEventClient):
         self.stack.replaceLayer(0, self.sdr.getProps())
 
         self.sdr.addSpectrumClient(self)
+
+        # The DS badge belongs here and not in the initial configuration: that
+        # one is assembled before the device is attached, so it cannot yet say
+        # which input the radio is using, and a listener who reloaded the page
+        # while the receiver was below the tuner's floor saw the badge vanish
+        # even though nothing had changed. This runs whenever the source
+        # becomes available - on the first connection and after every restart.
+        self.write_config({"direct_sampling": autohf.current_mode(self.sdr)})
 
     def handleNoSdrsAvailable(self):
         self.write_sdr_error("No SDR Devices available")

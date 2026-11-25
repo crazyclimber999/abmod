@@ -199,6 +199,13 @@
                             <option value="1000000000">GHz</option>
                         </select>
                         <button class="openwebrx-button" onclick="set_frequency();" style="margin-left:3px;">Set</button>
+                        <!-- Acceso solo quando la radio e in campionamento
+                             diretto: sotto i 24 MHz il tuner non arriva e si
+                             passa all'ingresso dell'ADC. Stesse dimensioni del
+                             pulsante Set perche gli sta accanto. -->
+                        <span class="openwebrx-button openwebrx-ds-indicator" id="openwebrx-ds"
+                              style="display:none; margin-left:3px;"
+                              title="Direct sampling: the tuner cannot reach this frequency, the ADC input is in use">DS</span>
                     </div>
                     <!-- Il subtono CTCSS, letto dall'audio nel browser. Sta qui, sotto
                          la frequenza, perche e una proprieta di cio che si sta
@@ -333,6 +340,10 @@
         }
         .openwebrx-ctcss-line .ctcss-margine { color: #9c9; font-weight: normal; font-size: 10px; }
         #openwebrx-panel-5tone-message { width: 360px !important; height: auto !important; }
+        .openwebrx-ds-indicator {
+            background: #7a3b1d; color: #ffd; border-color: #c86a35;
+            cursor: default; font-weight: bold;
+        }
         .five-tone-filter { display: flex; gap: 3px; margin-bottom: 6px; flex-wrap: wrap; }
         .five-tone-filter button {
             font-size: 9px; padding: 2px 6px; border-radius: 3px; cursor: pointer;
