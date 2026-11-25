@@ -1,0 +1,93 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>OpenWebRX Settings</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../static/favicon.ico" />
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="../static/css/admin.css" />
+    <script src="../compiled/settings.js"></script>
+    <meta charset="utf-8">
+</head>
+<body>
+${header}
+<div class="container">
+    ${breadcrumb}
+    <div class="row">
+        <h1 class="col-12">User management</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            Every enabled user can use the <strong>bookmarks</strong>.
+            Only <strong>administrators</strong> can enter the settings.
+            No action is allowed on the account you are logged in with, so that you
+            cannot lock yourself out: to change your own password use
+            <a href="../pwchange">Change password</a>.
+            At least one enabled administrator must remain at all times.
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-12">${message}</div>
+    </div>
+    <div class="row">
+        <div class="col-12">${users}</div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <h2 class="h4">New user</h2>
+            <form method="POST" action="users">
+                <input type="hidden" name="action" value="add">
+                <div class="form-group">
+                    <label for="new-username">User name</label>
+                    <input type="text" id="new-username" name="username" class="form-control" required
+                           autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="new-password">Password</label>
+                    <input type="password" id="new-password" name="password" class="form-control" required
+                           autocomplete="new-password">
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="new-mcp" name="must_change_password" checked>
+                    <label class="form-check-label" for="new-mcp">
+                        Must change the password at the first login
+                    </label>
+                </div>
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="new-admin" name="admin">
+                    <label class="form-check-label" for="new-admin">
+                        Administrator (can enter the settings)
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary">Create user</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <h2 class="h4">Reset password</h2>
+            <form method="POST" action="users">
+                <input type="hidden" name="action" value="password">
+                <div class="form-group">
+                    <label for="pw-username">User name</label>
+                    <input type="text" id="pw-username" name="username" class="form-control" required
+                           autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="pw-password">New password</label>
+                    <input type="password" id="pw-password" name="password" class="form-control" required
+                           autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn btn-warning">Reset</button>
+                <small class="form-text text-muted">
+                    The user will have to change it at the next login.
+                </small>
+            </form>
+        </div>
+    </div>
+
+    ${breadcrumb}
+</div>
+</body>
+</html>

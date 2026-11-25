@@ -1,0 +1,12 @@
+# Nothing in this repository is generated, and no receiver data belongs in it.
+__pycache__/
+*.py[cod]
+.DS_Store
+*.swp
+
+# Never: repeater lists have their own licence, and settings hold credentials.
+*.xls
+*.xlsx
+settings.json
+users.json
+bookmarks.json

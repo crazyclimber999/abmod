@@ -1,0 +1,60 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>OpenWebRX Settings</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../static/favicon.ico" />
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="../static/css/admin.css" />
+    <script src="../compiled/settings.js"></script>
+    <meta charset="utf-8">
+</head>
+<body>
+${header}
+<div class="container">
+    ${breadcrumb}
+    <div class="row">
+        <h1 class="col-12">Bandplan</h1>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            These are the mode frequencies shown as green tags on the frequency scale.
+            They are visible to every visitor, logged in or not.
+            The band is derived from the frequency, so an entry cannot be placed
+            outside the band that covers it.
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-12">${message}</div>
+    </div>
+    <div class="row">
+        <div class="col-12">${bandplan}</div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <h2 class="h4">New entry</h2>
+            <form method="POST" action="bandplan">
+                <input type="hidden" name="action" value="add">
+                <div class="form-group">
+                    <label for="new-mode">Mode</label>
+                    <input type="text" id="new-mode" name="modulation" class="form-control" required
+                           placeholder="ft8, packet, wspr, nfm, ..." autocomplete="off">
+                    <small class="form-text text-muted">
+                        A mode that is not currently available is still stored, but it is
+                        not drawn on the scale until the feature it needs is enabled.
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="new-frequency">Frequency (MHz)</label>
+                    <input type="number" id="new-frequency" name="frequency" class="form-control" required
+                           step="any" placeholder="144.800">
+                </div>
+                <button type="submit" class="btn btn-primary">Add entry</button>
+            </form>
+        </div>
+    </div>
+
+    ${breadcrumb}
+</div>
+</body>
+</html>

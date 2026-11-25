@@ -1,0 +1,51 @@
+    <div id="openwebrx-panel-memory">
+        <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px; color: #fff;"><span id="memory-title">Bookmarks</span> <span id="memory-count" style="color:#888; font-weight:normal;"></span></div>
+        <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+            <label for="memory-source" style="font-size: 11px; color: #aaa;">Source</label>
+            <select id="memory-source" onchange="switch_memory_source();" style="flex: 1; font-size: 11px; padding: 3px;">
+                <option value="bookmarks" selected>Bookmarks</option>
+                <option value="bandplan">Bandplan</option>
+            </select>
+        </div>
+        <div style="margin-bottom: 8px;">
+            <input type="search" id="memory-search" placeholder="Search name, frequency or mode" oninput="render_memories();" style="width: 100%; font-size: 11px; padding: 3px;">
+        </div>
+        <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+            <label for="memory-sort" style="font-size: 11px; color: #aaa;">Sort by</label>
+            <select id="memory-sort" onchange="render_memories();" style="flex: 1; font-size: 11px; padding: 3px;">
+                <option value="name" selected>Name</option>
+                <option value="freq">Frequency</option>
+            </select>
+        </div>
+        <div id="memory-edit-banner" style="display:none; margin-bottom: 6px; padding: 4px 6px; background:#3a3f2a; border:1px solid #5a6340; border-radius:4px; font-size:10px; color:#cfc;">
+            Editing <strong id="memory-edit-name" style="color:#ffd"></strong>
+            <a href="javascript:cancel_edit_memory();" style="float:right; color:#f99;">cancel</a>
+        </div>
+        <div style="margin-bottom: 8px;">
+            <input type="text" id="memory-name" placeholder="Bookmark name" style="width: 70%; font-size: 11px; padding: 3px;">
+            <input type="number" id="memory-freq" placeholder="MHz" style="width: 25%; font-size: 11px; padding: 3px;" step="any">
+        </div>
+        <div style="margin-bottom: 8px;">
+            <select id="memory-mod" onchange="update_5tone_option();" style="width: 100%; font-size: 11px; padding: 3px;">
+                <option value="nfm">NFM</option>
+                <option value="fm">FM</option>
+                <option value="am">AM</option>
+                <option value="usb">USB</option>
+                <option value="lsb">LSB</option>
+                <option value="cw">CW</option>
+            </select>
+        </div>
+        <div id="memory-5tone-row" style="display:none; margin-bottom: 8px;">
+            <label style="font-size: 11px; color: #aaa;">
+                <input type="checkbox" id="memory-5tone" style="vertical-align: middle;">
+                Decode 5 tone (SELCALL)
+            </label>
+        </div>
+        <div style="margin-bottom: 8px;">
+            <button id="memory-save-button" onclick="save_memory_from_panel();" style="width: 45%; font-size: 10px; padding: 4px;">Save</button>
+            <button onclick="close_memory_panel();" style="width: 45%; font-size: 10px; padding: 4px; margin-left: 10px;">Close</button>
+        </div>
+        <div id="memory-list" style="max-height: 340px; overflow-y: auto; margin-top: 10px; border-top: 1px solid #444; padding-top: 8px;">
+            <!-- bookmarks are rendered here -->
+        </div>
+    </div>
