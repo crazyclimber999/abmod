@@ -93,53 +93,76 @@ if the file list ever needs regenerating:
 
 ---
 
-## Publishing a repository
+## The repository: crazyclimber999.github.io/abmod
 
-An APT repository is just files on a web server — nothing dynamic. This builds
-one:
+Served by GitHub Pages from the `gh-pages` branch, which is why that branch
+holds the packages and their indices and `main` does not. The `.nojekyll` file
+on it is not decoration: without it Pages runs the tree through Jekyll, which
+drops directories beginning with an underscore and is free to rewrite what it
+takes for a page.
+
+On each receiver, once:
 
 ```bash
-./packaging/repo/build-repo.sh --out ./apt --key <your-gpg-key-id> abmod_1.0.0_all.deb
+sudo curl -fsSL https://crazyclimber999.github.io/abmod/abmod-archive-keyring.asc -o /usr/share/keyrings/abmod.asc
 ```
 
-Then copy that directory to somewhere reachable over HTTP, and on each
-receiver:
-
 ```bash
-sudo curl -fsSL https://your.host/abmod-archive-keyring.asc -o /usr/share/keyrings/abmod.asc
-```
-
-```bash
-echo "deb [signed-by=/usr/share/keyrings/abmod.asc] https://your.host/ bullseye main" | sudo tee /etc/apt/sources.list.d/abmod.list
+echo "deb [signed-by=/usr/share/keyrings/abmod.asc] https://crazyclimber999.github.io/abmod/ bullseye main" | sudo tee /etc/apt/sources.list.d/abmod.list
 ```
 
 ```bash
 sudo apt-get update && sudo apt-get install abmod
 ```
 
-**Sign it.** Without `--key` the repository is unsigned, every receiver has to
-be told `[trusted=yes]` to use it at all, and that flag does not just skip a
-formality — it disables the check that the package you are installing is the
-one that was published. On a machine that runs as a network service, reached
-from outside, that is the wrong corner to cut.
+### Publishing a new version
 
-### Where to put it
+```bash
+packaging/publish-pages.sh
+```
 
-Three honest options, with what each actually costs:
+It builds the package, builds a signed repository from it, pushes the result to
+`gh-pages`, and then **fetches what Pages actually serves** and fails if any of
+it is missing. A publish that reports success without that check has told you
+about its own intentions, not about the state of the world.
 
-**Your own web space.** Any static hosting you already control. Nothing to set
-up beyond an upload, the URL is yours, and it keeps working if GitHub does not.
-This is the one to choose if you have it.
+`--dry-run` builds and commits locally without pushing.
 
-**GitHub Pages.** Free and reliable, but Pages will not serve a private
-repository — so this means publishing the package, and the package contains the
-source. If the repository is deliberately private, this option is not available
-without changing that decision.
+It has to run on a Debian machine, because building a `.deb` needs `dpkg-deb`
+and indexing a repository needs `dpkg-scanpackages` — in practice the receiver.
+It says so if you run it anywhere else.
 
-**A receiver serving the others.** One Pi with a web server and the repository
-directory under it. Fine on a local network and genuinely useful for a cluster
-of receivers; useless to anyone outside it, and it means a receiver is also a
-small web server.
+### Where the signing key lives, and why it is not in CI
+
+The GitHub Action builds the package and runs its checks on every push, and
+holds no secrets. It does not sign and it does not publish.
+
+Signing in CI would mean putting the private key in a repository secret. A key
+whose whole job is to prove the packages came from you is worth more than the
+convenience of not typing a command, so that trade is not made by default here.
+It is a defensible trade — most distributions make it — but it should be made
+knowingly.
+
+Which leaves the key wherever you put it, with the honest costs:
+
+- **On the receiver**, where the publish script runs: simplest, one machine, and
+  the key sits on a box reachable from the internet.
+- **In a GitHub secret**: an Action publishes on a tag and you never type
+  anything, and the key has left your hands.
+- **On your own machine**, with the repository built on the receiver and only
+  the `Release` file brought back to sign: the key never moves, at the cost of
+  a two-step publish.
+
+The script does not create a key, and that is deliberate: a signing key needs a
+passphrase, and choosing someone else's passphrase is not a favour. Make one
+with
+
+```bash
+gpg --full-generate-key
+```
+
+take the defaults, use a name and an address you are content to publish, and
+set a passphrase. The script finds it by itself if it is the only one.
 
 ### Without a repository at all
 

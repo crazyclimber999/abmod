@@ -34,7 +34,14 @@ Dates are the day the change was finished and running on a live receiver.
   diverted list against the `openwebrx` installed on the build machine, counts
   what reached the archive against the source tree, and rejects stray macOS
   AppleDouble files. `packaging/repo/build-repo.sh` turns the result into a
-  signed APT repository. See [installing with apt-get](docs/en/apt.md).
+  signed APT repository, and `packaging/publish-pages.sh` publishes it to
+  GitHub Pages at
+  [crazyclimber999.github.io/abmod](https://crazyclimber999.github.io/abmod/) —
+  then fetches what Pages actually serves and fails if any of it is missing.
+  A GitHub Action builds and checks the package on every push; it holds no
+  secrets and does not sign, because a signing key in a repository secret buys
+  convenience with the one thing the key exists to prove. See
+  [installing with apt-get](docs/en/apt.md).
 
 ## v1.0.1 — 2026-11-25
 

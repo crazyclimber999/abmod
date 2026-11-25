@@ -36,7 +36,13 @@ ricevitore vero.
   garantire: controlla l'elenco dei file deviati contro l'`openwebrx` installato
   sulla macchina di build, conta cosa è finito nell'archivio contro l'albero
   sorgente, e scarta i file AppleDouble di macOS. `packaging/repo/build-repo.sh`
-  trasforma il risultato in un repository APT firmato. Vedi
+  trasforma il risultato in un repository APT firmato, e
+  `packaging/publish-pages.sh` lo pubblica su GitHub Pages all'indirizzo
+  [crazyclimber999.github.io/abmod](https://crazyclimber999.github.io/abmod/) —
+  poi scarica quello che Pages serve davvero e fallisce se manca qualcosa. Una
+  GitHub Action costruisce e controlla il pacchetto a ogni push; non contiene
+  segreti e non firma, perché una chiave di firma in un secret compra comodità
+  con l'unica cosa che la chiave serve a dimostrare. Vedi
   [installare con apt-get](docs/it/apt.md).
 
 ## v1.0.1 — 25 novembre 2026

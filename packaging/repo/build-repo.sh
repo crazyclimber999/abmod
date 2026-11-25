@@ -70,8 +70,11 @@ scrivi_release() {
         for algoritmo in MD5Sum:md5sum SHA256:sha256sum; do
             printf '%s:\n' "${algoritmo%%:*}"
             local comando="${algoritmo##*:}"
-            (cd "$dist" && find . -type f ! -name 'Release*' ! -name 'InRelease' -printf '%P\n' | sort | while IFS= read -r f; do
-                printf ' %s %16d %s\n' "$($comando "$f" | cut -d' ' -f1)" "$(stat -c%s "$f")" "$f"
+            # No find -printf and no stat -c: both are GNU-only, and this
+            # script has to run wherever the signing key lives.
+            (cd "$dist" && find . -type f ! -name 'Release*' ! -name 'InRelease' \
+                | sed 's|^\./||' | sort | while IFS= read -r f; do
+                printf ' %s %16d %s\n' "$($comando "$f" | cut -d' ' -f1)" "$(wc -c < "$f" | tr -d ' ')" "$f"
             done)
         done
     } > "$dist/Release"

@@ -37,11 +37,12 @@ sudo ./install/upgrade.sh
 sudo apt-get install abmod
 ```
 
-ABMod si costruisce come pacchetto Debian che sostituisce i file di openwebrx
-con le diversions di dpkg, così `apt-get remove abmod` rimette gli originali e
-un aggiornamento futuro di OpenWebRX non può sovrascrivere la modifica in
-silenzio. Al pacchetto serve un repository da cui installarlo, o anche solo il
-file `.deb`.
+dal repository su
+[crazyclimber999.github.io/abmod](https://crazyclimber999.github.io/abmod/),
+dopo averlo detto una volta al ricevitore. ABMod è un pacchetto Debian che
+sostituisce i file di openwebrx con le diversions di dpkg, così
+`apt-get remove abmod` rimette gli originali e un aggiornamento futuro di
+OpenWebRX non può sovrascrivere la modifica in silenzio.
 
 In entrambi i casi nulla viene modificato finché non è stato preso un backup
 **e riletto**, e alla fine lo script verifica che il ricevitore abbia davvero

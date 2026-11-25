@@ -97,52 +97,76 @@ l'elenco va rigenerato:
 
 ---
 
-## Pubblicare un repository
+## Il repository: crazyclimber999.github.io/abmod
 
-Un repository APT è solo file su un web server, non c'è niente di dinamico.
-Questo lo costruisce:
+Servito da GitHub Pages dal branch `gh-pages`, ed è per questo che i pacchetti
+e i loro indici stanno là e non in `main`. Il file `.nojekyll` su quel branch
+non è un ornamento: senza, Pages passa l'albero per Jekyll, che scarta le
+cartelle che iniziano per underscore ed è libero di riscrivere quello che
+considera una pagina.
+
+Su ogni ricevitore, una volta sola:
 
 ```bash
-./packaging/repo/build-repo.sh --out ./apt --key <id-della-tua-chiave-gpg> abmod_1.0.0_all.deb
+sudo curl -fsSL https://crazyclimber999.github.io/abmod/abmod-archive-keyring.asc -o /usr/share/keyrings/abmod.asc
 ```
 
-Poi copi quella cartella dove è raggiungibile via HTTP, e su ogni ricevitore:
-
 ```bash
-sudo curl -fsSL https://tuo.host/abmod-archive-keyring.asc -o /usr/share/keyrings/abmod.asc
-```
-
-```bash
-echo "deb [signed-by=/usr/share/keyrings/abmod.asc] https://tuo.host/ bullseye main" | sudo tee /etc/apt/sources.list.d/abmod.list
+echo "deb [signed-by=/usr/share/keyrings/abmod.asc] https://crazyclimber999.github.io/abmod/ bullseye main" | sudo tee /etc/apt/sources.list.d/abmod.list
 ```
 
 ```bash
 sudo apt-get update && sudo apt-get install abmod
 ```
 
-**Firmalo.** Senza `--key` il repository non è firmato, ogni ricevitore va
-istruito con `[trusted=yes]` per poterlo usare, e quel flag non salta una
-formalità: disattiva il controllo che il pacchetto che stai installando sia
-quello che è stato pubblicato. Su una macchina che fa da servizio di rete,
-raggiunta da fuori, è l'angolo sbagliato da tagliare.
+### Pubblicare una versione nuova
 
-### Dove metterlo
+```bash
+packaging/publish-pages.sh
+```
 
-Tre possibilità oneste, con quello che costano davvero:
+Costruisce il pacchetto, ne costruisce un repository firmato, spinge il
+risultato su `gh-pages`, e poi **scarica quello che Pages serve davvero** e
+fallisce se manca qualcosa. Una pubblicazione che dichiara successo senza quel
+controllo ti ha raccontato le sue intenzioni, non lo stato del mondo.
 
-**Il tuo spazio web.** Qualunque hosting statico che già controlli. Niente da
-configurare oltre all'upload, l'indirizzo è tuo, e continua a funzionare anche
-se GitHub no. Se ce l'hai, è questa.
+`--dry-run` costruisce e committa in locale senza pushare.
 
-**GitHub Pages.** Gratis e affidabile, ma Pages non serve una repository
-privata — quindi vorrebbe dire pubblicare il pacchetto, e il pacchetto contiene
-i sorgenti. Se la repository è privata per scelta, questa strada non è
-disponibile senza cambiare quella scelta.
+Deve girare su una macchina Debian, perché costruire un `.deb` richiede
+`dpkg-deb` e indicizzare un repository richiede `dpkg-scanpackages`: in pratica
+il ricevitore. Se lo lanci altrove te lo dice.
 
-**Un ricevitore che serve gli altri.** Un Pi con un web server e sotto la
-cartella del repository. Va benissimo in rete locale ed è utile per un gruppo
-di ricevitori; inutile per chi sta fuori, e vuol dire che un ricevitore è anche
-un piccolo web server.
+### Dove sta la chiave di firma, e perché non in CI
+
+La GitHub Action costruisce il pacchetto e fa i suoi controlli a ogni push, e
+non contiene nessun segreto. Non firma e non pubblica.
+
+Firmare in CI vorrebbe dire mettere la chiave privata in un secret della
+repository. Una chiave il cui unico compito è dimostrare che i pacchetti
+vengono da te vale più della comodità di non digitare un comando, quindi quello
+scambio qui non è fatto per inerzia. È uno scambio difendibile — lo fanno quasi
+tutte le distribuzioni — ma va fatto sapendo cosa si scambia.
+
+Resta la chiave dove la metti tu, con i costi veri:
+
+- **Sul ricevitore**, dove gira lo script di pubblicazione: la più semplice, una
+  macchina sola, e la chiave sta su una scatola raggiungibile da internet.
+- **In un secret di GitHub**: una Action pubblica al tag e tu non digiti niente,
+  e la chiave ti è uscita dalle mani.
+- **Sulla tua macchina**, col repository costruito sul ricevitore e solo il file
+  `Release` riportato indietro per firmarlo: la chiave non si muove, al prezzo
+  di una pubblicazione in due passi.
+
+Lo script non crea nessuna chiave, ed è voluto: una chiave di firma vuole una
+passphrase, e scegliere la passphrase di un altro non è un favore. Creane una
+con
+
+```bash
+gpg --full-generate-key
+```
+
+prendi i default, usa un nome e un indirizzo che ti va bene pubblicare, e metti
+una passphrase. Lo script la trova da sé se è l'unica.
 
 ### Senza nessun repository
 

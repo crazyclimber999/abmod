@@ -1,0 +1,101 @@
+# Builds the Debian package on every push and attaches it to a release on a
+# tag. It does NOT sign anything and holds no secrets: the signing key belongs
+# wherever its owner decided, not in this repository, so publishing the APT
+# repository stays a command someone runs (packaging/publish-pages.sh).
+#
+# What this does buy: build-deb.sh runs its own checks - the file count in the
+# archive against the source tree, stray macOS AppleDouble files, every
+# maintainer script parsed - so a commit that would produce a broken package
+# fails here rather than on a receiver.
+
+name: package
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dpkg-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dpkg-dev
+
+      - name: Build the package
+        run: ./packaging/build-deb.sh
+
+      # The build cannot check the diverted-file list here, because openwebrx
+      # is not installed on a GitHub runner - it says so and carries on. What
+      # it can check is that the list has not drifted into nonsense: every path
+      # in it must exist in the source tree, or the maintainer scripts would
+      # divert files this package never installs.
+      - name: Check the diverted list against the source tree
+        run: |
+          mancanti=0
+          while IFS= read -r rel; do
+            case "$rel" in ''|\#*) continue ;; esac
+            if [ ! -f "src/$rel" ]; then
+              echo "diverted-files.txt lists $rel, which is not in src/"
+              mancanti=$((mancanti + 1))
+            fi
+          done < packaging/diverted-files.txt
+          [ "$mancanti" = 0 ] || exit 1
+          echo "every diverted path exists in src/"
+
+      - name: Show what is in the package
+        run: |
+          dpkg-deb --info abmod_*_all.deb
+          dpkg-deb --contents abmod_*_all.deb
+
+      # A package that unpacks is not a package that installs - the maintainer
+      # scripts need a real openwebrx to divert, which no runner has. This at
+      # least proves the archive is well formed and dpkg will read it.
+      - name: Check the archive is well formed
+        run: |
+          dpkg-deb --fsys-tarfile abmod_*_all.deb > /dev/null
+          echo "archive reads cleanly"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: abmod-deb
+          path: abmod_*_all.deb
+          if-no-files-found: error
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: abmod-deb
+
+      - name: Attach the package to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" abmod_*_all.deb \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "ABMod ${GITHUB_REF_NAME}" \
+            --notes "The package is attached. It installs with:
+
+    sudo apt-get install ./abmod_*_all.deb
+
+For \`apt-get install abmod\` from the repository, see the [APT repository](https://crazyclimber999.github.io/abmod/).
+
+Read [the changelog](https://github.com/crazyclimber999/abmod/blob/main/CHANGELOG.md) for what changed." \
+            || gh release upload "${GITHUB_REF_NAME}" abmod_*_all.deb --clobber \
+                 --repo "${GITHUB_REPOSITORY}"
