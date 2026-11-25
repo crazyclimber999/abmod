@@ -1,0 +1,46 @@
+#!/bin/sh
+set -e
+
+BASE=/usr/lib/python3/dist-packages
+
+case "$1" in
+    configure)
+        # Every python file must at least parse. A syntax error here takes the
+        # whole receiver down, and it is far cheaper to find it now than from
+        # a restart loop.
+        if ! python3 -c '
+import compileall, sys
+ok = compileall.compile_dir("'"$BASE"'/owrx", quiet=2, force=False)
+sys.exit(0 if ok else 1)
+' >/dev/null 2>&1; then
+            echo "abmod: a python file under owrx/ does not compile." >&2
+            echo "abmod: the receiver will not start - report this." >&2
+            exit 1
+        fi
+
+        # The compiled javascript bundles are rebuilt by the receiver itself,
+        # but anything in front of it will happily keep serving the old ones.
+        if command -v varnishadm >/dev/null 2>&1; then
+            varnishadm "ban req.url ~ ." >/dev/null 2>&1 || true
+        fi
+
+        if [ -d /run/systemd/system ]; then
+            systemctl try-restart openwebrx.service >/dev/null 2>&1 || true
+        fi
+
+        cat <<FATTO
+
+ABMod is installed. The receiver has been restarted.
+
+If you have never used it before, the settings now hold an APRS page, an
+antenna section and a listenability estimate, and the bookmark editor has an
+import page. There is nothing to configure for the receiver to come back up.
+
+Removing this package puts the original OpenWebRX files back:
+    sudo apt-get remove abmod
+
+FATTO
+        ;;
+esac
+
+exit 0

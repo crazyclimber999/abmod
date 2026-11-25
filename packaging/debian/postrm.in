@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# Removes the diversions, which moves each .openwebrx-original back to its real
+# name. dpkg has already deleted ABMod's own files by the time this runs, so
+# the receiver is left exactly as the openwebrx package shipped it.
+#
+set -e
+
+BASE=/usr/lib/python3/dist-packages
+SUFFIX=.openwebrx-original
+
+FILES="@FILES@"
+
+rimuovi_diversions() {
+    for rel in $FILES; do
+        dpkg-divert --package abmod --quiet --remove --rename \
+            --divert "$BASE/$rel$SUFFIX" "$BASE/$rel" || true
+    done
+}
+
+case "$1" in
+    remove|purge)
+        rimuovi_diversions
+        # Byte code for files that no longer exist, and for the ones just put
+        # back, would otherwise be stale.
+        find "$BASE/owrx" -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true
+        if [ -d /run/systemd/system ]; then
+            systemctl try-restart openwebrx.service >/dev/null 2>&1 || true
+        fi
+        ;;
+    abort-install|disappear)
+        # The install never happened. Undo any diversion the preinst managed to
+        # add, and nothing else: there is no reason to clear byte code or
+        # restart a receiver that was never touched.
+        rimuovi_diversions
+        ;;
+    upgrade|failed-upgrade|abort-upgrade)
+        # The new version wants the same diversions: leave them in place.
+        ;;
+esac
+
+exit 0

@@ -10,3 +10,7 @@ __pycache__/
 settings.json
 users.json
 bookmarks.json
+
+# macOS metadata, which a tar to a Linux box turns into real files
+._*
+.DS_Store

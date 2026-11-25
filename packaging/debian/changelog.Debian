@@ -1,0 +1,9 @@
+abmod (1.0.0) bullseye; urgency=low
+
+  * First packaged release, against OpenWebRX 1.2.2.
+  * Replaces 31 openwebrx files through dpkg diversions and adds 19 of its own.
+  * Refuses to install over files changed outside dpkg, which is what a
+    hand-installed ABMod looks like; reinstall openwebrx first.
+  * Removing the package restores the original OpenWebRX files.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Wed, 25 Nov 2026 14:00:00 +0000

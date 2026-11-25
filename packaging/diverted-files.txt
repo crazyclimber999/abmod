@@ -1,0 +1,41 @@
+# Files ABMod replaces that the openwebrx package owns.
+#
+# Each one is diverted at install time, so the upstream file is kept beside it
+# as <name>.openwebrx-original and comes back when ABMod is removed. Without a
+# diversion dpkg would refuse to unpack over another package's file, and a
+# later openwebrx upgrade would silently overwrite the modification.
+#
+# Paths are relative to /usr/lib/python3/dist-packages.
+# Regenerate with packaging/list-diverted.sh against a receiver that has a
+# pristine openwebrx installed.
+htdocs/include/header.include.html
+htdocs/index.html
+htdocs/lib/DemodulatorPanel.js
+htdocs/lib/settings/MapInput.js
+htdocs/map.html
+htdocs/map.js
+htdocs/openwebrx.js
+htdocs/settings.html
+htdocs/settings/bookmarks.html
+htdocs/settings/general.html
+owrx/__main__.py
+owrx/aprs/direwolf.py
+owrx/bands.py
+owrx/config/defaults.py
+owrx/connection.py
+owrx/controllers/admin.py
+owrx/controllers/assets.py
+owrx/controllers/imageupload.py
+owrx/controllers/session.py
+owrx/controllers/settings/__init__.py
+owrx/controllers/settings/bookmarks.py
+owrx/controllers/settings/general.py
+owrx/controllers/settings/reporting.py
+owrx/controllers/settings/sdr.py
+owrx/controllers/template.py
+owrx/controllers/websocket.py
+owrx/dsp.py
+owrx/form/input/location.py
+owrx/http.py
+owrx/modes.py
+owrx/users.py

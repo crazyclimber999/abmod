@@ -1,0 +1,26 @@
+Package: abmod
+Version: @VERSION@
+Section: hamradio
+Priority: optional
+Architecture: all
+Maintainer: IU2QDA <iu2qda@users.noreply.github.com>
+Homepage: https://www.iu2qda.it
+Depends: openwebrx (>= 1.2.2), openwebrx (<< 1.2.3), python3, python3-numpy
+Recommends: python3-xlrd
+Installed-Size: @SIZE@
+Description: Modifications to OpenWebRX for amateur radio stations
+ ABMod adds to OpenWebRX a bookmarks panel inside the receiver, an editable
+ band plan, real access control with user management, 5-tone (SELCALL) and
+ 2-tone paging decoders, a map drawn with Leaflet on OpenStreetMap instead of
+ the Google Maps API, APRS in both directions, and an importer for a national
+ repeater list that works out from the terrain which stations are actually
+ receivable.
+ .
+ It is not a fork. It replaces 31 files of the openwebrx package, using dpkg
+ diversions so the originals are kept beside them and restored when this
+ package is removed, and adds 19 of its own. Your settings, bookmarks and users
+ are never touched.
+ .
+ Because whole files are replaced, this package is tied to the exact OpenWebRX
+ version it was built against. Installing it will hold openwebrx at that
+ version; removing it lets openwebrx upgrade again.

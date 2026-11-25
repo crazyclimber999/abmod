@@ -1,0 +1,35 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: ABMod for OpenWebRX
+Source: https://www.iu2qda.it
+
+Files: *
+Copyright: 2026 IU2QDA
+License: AGPL-3+
+
+Comment:
+ ABMod is a set of modifications to OpenWebRX, which is the work of
+ Jakob Ketterl, DD5JFK, and its contributors - https://www.openwebrx.de and
+ https://github.com/jketterl/openwebrx. The files this package installs are
+ derived from that work and carry its licence.
+ .
+ Also used: Leaflet for the map; map tiles from the OpenStreetMap
+ contributors; position data from aprs.fi; the APRS symbols of the
+ aprs-symbols project; NASA SRTM elevation data, distributed as public tiles.
+ No repeater data is included in this package.
+
+License: AGPL-3+
+ This program is free software: you can redistribute it and/or modify it under
+ the terms of the GNU Affero General Public License as published by the Free
+ Software Foundation, either version 3 of the License, or (at your option) any
+ later version.
+ .
+ This program is distributed in the hope that it will be useful, but WITHOUT
+ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ details.
+ .
+ On Debian systems the full text of the GNU Affero General Public License
+ version 3 can be found in /usr/share/common-licenses/AGPL-3.
+ .
+ Running a modified version as a network service - which is what a WebSDR is -
+ obliges you to offer its sources to the people using it.

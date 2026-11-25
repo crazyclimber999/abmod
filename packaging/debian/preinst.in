@@ -1,0 +1,72 @@
+#!/bin/sh
+#
+# Diverts the openwebrx files ABMod replaces, so dpkg owns the swap rather than
+# a copy script doing it behind dpkg's back. The upstream file is kept beside
+# its replacement as <name>.openwebrx-original and comes back on removal.
+#
+set -e
+
+BASE=/usr/lib/python3/dist-packages
+MD5SUMS=/var/lib/dpkg/info/openwebrx.md5sums
+SUFFIX=.openwebrx-original
+
+FILES="@FILES@"
+
+# A file that is already diverted was handled by an earlier install of this
+# package; one that still differs from what the openwebrx package recorded was
+# changed by something else - almost certainly ABMod installed by hand with
+# install.sh or upgrade.sh. Diverting it now would record the MODIFIED file as
+# the original, and removing this package would then "restore" a modified file
+# and call it upstream. That is a mess to unpick later, so stop here instead.
+sporchi=""
+for rel in $FILES; do
+    percorso="$BASE/$rel"
+    [ -e "$percorso$SUFFIX" ] && continue
+    [ -e "$percorso" ] || continue
+    [ -f "$MD5SUMS" ] || continue
+    atteso=$(awk -v p="usr/lib/python3/dist-packages/$rel" '$2 == p { print $1 }' "$MD5SUMS")
+    [ -n "$atteso" ] || continue
+    ottenuto=$(md5sum "$percorso" | cut -d' ' -f1)
+    if [ "$atteso" != "$ottenuto" ]; then
+        sporchi="$sporchi $rel"
+    fi
+done
+
+if [ -n "$sporchi" ]; then
+    quanti=$(echo $sporchi | wc -w)
+    cat >&2 <<AVVISO
+
+ABMod cannot be installed over files that were changed outside dpkg.
+
+$quanti of the openwebrx files this package replaces do not match what the
+openwebrx package recorded. That is what a hand-installed ABMod looks like -
+install.sh or upgrade.sh copied over them.
+
+Installing now would register those modified files as the originals, and
+removing ABMod later would restore them and call them upstream.
+
+Put the original files back first, which does not touch your settings,
+bookmarks or users:
+
+    sudo apt-get install --reinstall openwebrx
+
+then install this package again. Your receiver runs plain OpenWebRX for the
+minute in between.
+
+The files in question:
+AVVISO
+    for rel in $sporchi; do echo "    $rel" >&2; done
+    echo >&2
+    exit 1
+fi
+
+case "$1" in
+    install|upgrade)
+        for rel in $FILES; do
+            dpkg-divert --package abmod --quiet --add --rename \
+                --divert "$BASE/$rel$SUFFIX" "$BASE/$rel"
+        done
+        ;;
+esac
+
+exit 0

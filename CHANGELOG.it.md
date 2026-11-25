@@ -34,6 +34,36 @@ ricevitore vero.
   `write_memory_recalled`) e da `openwebrx.js` (`on_memory_recalled` e il suo
   case).
 
+## Non ancora rilasciato
+
+### Aggiunto
+
+- **Un pacchetto Debian, così un ricevitore installa ABMod con
+  `apt-get install`.** I 31 file che ABMod sostituisce passano per le
+  **diversions di dpkg** invece di essere copiati sopra: l'originale resta
+  accanto al sostituto come `<nome>.openwebrx-original`,
+  `apt-get remove abmod` lo ripristina davvero, e un aggiornamento successivo
+  di `openwebrx` scrive sul nome deviato invece di sovrascrivere la modifica in
+  silenzio. I 19 file nuovi si installano e basta.
+  .
+  **Si rifiuta di installarsi sopra un ABMod messo a mano**, elencando i file,
+  perché deviare un file già modificato registrerebbe la copia modificata come
+  originale — e il danno si vede solo al momento della rimozione, molto dopo.
+  Prima `apt-get install --reinstall openwebrx`, poi il pacchetto.
+  .
+  `Depends: openwebrx (>= 1.2.2), openwebrx (<< 1.2.3)`, che tiene OpenWebRX
+  alla versione su cui ABMod è costruito. Sostituisce file interi, quindi un
+  OpenWebRX diverso è un insieme di file diverso: il vincolo lo dichiara invece
+  di nasconderlo.
+  .
+  `packaging/build-deb.sh` lo costruisce su qualunque macchina con `dpkg-dev`,
+  compreso il ricevitore, e si rifiuta di produrre un pacchetto di cui non può
+  garantire: controlla l'elenco dei file deviati contro l'`openwebrx` installato
+  sulla macchina di build, conta cosa è finito nell'archivio contro l'albero
+  sorgente, e scarta i file AppleDouble di macOS. `packaging/repo/build-repo.sh`
+  trasforma il risultato in un repository APT firmato. Vedi
+  [installare con apt-get](docs/it/apt.md).
+
 ## v1.0.0 — 25 novembre 2026
 
 Prima versione pubblicata. In funzione su due ricevitori Raspberry Pi 3.

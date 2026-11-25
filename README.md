@@ -31,6 +31,17 @@ cd abmod
 sudo ./install/upgrade.sh
 ```
 
+**Or with apt** → [Installing with apt-get](docs/en/apt.md)
+
+```bash
+sudo apt-get install abmod
+```
+
+ABMod builds as a Debian package that replaces the openwebrx files through dpkg
+diversions, so `apt-get remove abmod` puts the originals back and a later
+OpenWebRX upgrade cannot overwrite the modification in silence. The package
+needs a repository to install from, or just the `.deb` file.
+
 Either way nothing is changed until a backup has been taken **and read back**,
 and the script checks afterwards that the receiver really answered. If it did
 not, one command puts everything back:
