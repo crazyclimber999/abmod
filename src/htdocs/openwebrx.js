@@ -1402,8 +1402,10 @@ function init_five_tone_panel_class() {
             $nota.text('');
             return;
         }
-        $nota.text(nascoste + ' decoded but hidden by the filter above \u2014 ' +
-            'switch its standard back on to see them.');
+        // kept to one line: the panel grows upward from the bottom of the
+        // screen, so every extra line of this note moves the whole panel, and
+        // the long version wrapped to two.
+        $nota.text(nascoste + ' hidden by the filter above.');
     };
 
     FiveToneMessagePanel.prototype.pushMessage = function(msg) {

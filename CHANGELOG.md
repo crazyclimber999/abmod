@@ -8,7 +8,21 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
-## Unreleased
+## v1.0.2 — 2026-11-25
+
+### Fixed
+
+- **The 5-tone panel's heading covered the first results** once the
+  "hidden by the filter" notice appeared. OpenWebRX gives every message panel's
+  tbody its own scrollbox - `display: block`, `overflow: auto` and a fixed
+  `height: 150px` - and ABMod overrode only the display. A height on a
+  `table-row-group` acts as a *minimum*, so with few rows the browser stretched
+  each from 18px to 25px, and the box scrolled 6px inside a wrapper that was
+  already scrolling, pushing the first row up under the sticky heading.
+  Measured at **24px of overlap**, now 0. All three properties are undone, for
+  the 2-tone panel as well. The notice is also one line instead of two, because
+  the panel grows upward from the bottom of the screen and every extra line
+  moves the whole thing.
 
 ### Documented
 

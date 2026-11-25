@@ -1,9 +1,17 @@
+abmod (1.0.2) bullseye; urgency=low
+
+  * Fix the 5-tone panel heading covering the first results when the
+    "hidden by the filter" notice appears: the upstream tbody scrollbox
+    (height 150px, overflow auto) was only half overridden.
+  * Shorten that notice to one line.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Wed, 25 Nov 2026 21:00:00 +0000
+
 abmod (1.0.0) bullseye; urgency=low
 
   * First packaged release, against OpenWebRX 1.2.2.
   * Replaces 31 openwebrx files through dpkg diversions and adds 19 of its own.
-  * Refuses to install over files changed outside dpkg, which is what a
-    hand-installed ABMod looks like; reinstall openwebrx first.
+  * Refuses to install over files changed outside dpkg.
   * Removing the package restores the original OpenWebRX files.
 
  -- IU2QDA <iu2qda@users.noreply.github.com>  Wed, 25 Nov 2026 14:00:00 +0000

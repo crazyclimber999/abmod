@@ -9,7 +9,21 @@ ABMod è costruito e provato. Le ragioni delle scelte sono in
 Le date sono il giorno in cui la modifica è stata finita e messa su un
 ricevitore vero.
 
-## Non ancora rilasciato
+## v1.0.2 — 25 novembre 2026
+
+### Corretto
+
+- **L'intestazione del pannello 5 toni copriva i primi risultati** quando
+  compariva la nota "nascoste dal filtro". OpenWebRX dà al tbody di ogni
+  pannello messaggi un suo riquadro di scorrimento - `display: block`,
+  `overflow: auto` e `height: 150px` fissa - e ABMod ne sovrascriveva solo il
+  display. Un'altezza su un `table-row-group` vale come *minimo*, quindi con
+  poche righe il browser le stirava da 18px a 25px, e il riquadro scorreva di
+  6px dentro un contenitore che già scorreva, spingendo la prima riga sotto
+  l'intestazione fissa. Misurati **24px di sovrapposizione**, ora 0. Corretti
+  tutti e tre, anche per il pannello 2 toni. La nota è anche su una riga invece
+  che due, perché il pannello cresce verso l'alto dal fondo dello schermo e ogni
+  riga in più sposta tutto.
 
 ### Documentato
 

@@ -356,7 +356,18 @@
             max-height: 144px; overflow-y: auto;
         }
         #openwebrx-panel-5tone-message thead { display: table-header-group; }
-        #openwebrx-panel-5tone-message tbody { display: table-row-group; }
+        /* openwebrx.css gives every message panel's tbody its own scrollbox:
+           display:block, overflow:auto and a fixed height:150px. Overriding
+           only the display left the height and the overflow in force, and a
+           height on a table-row-group acts as a MINIMUM: with few rows the
+           browser stretched each one from 18px to 25px, and the box scrolled
+           6px inside a wrapper that was already scrolling, which pushed the
+           first row up under the sticky heading - measured at 24px of overlap,
+           exactly the "the header covers the first results" report. All three
+           have to be undone, not just the display. */
+        #openwebrx-panel-5tone-message tbody {
+            display: table-row-group; height: auto; overflow: visible; width: auto;
+        }
         /* openwebrx.css lays the header row out as a block for the other
            message panels; left in place it makes the header row shrink to fit
            while the body rows fill the table, which is what put every heading
@@ -392,7 +403,10 @@
             max-height: 144px; overflow-y: auto;
         }
         #openwebrx-panel-2tone-message thead { display: table-header-group; }
-        #openwebrx-panel-2tone-message tbody { display: table-row-group; }
+        /* same three overrides as the 5 tone panel above, same reason */
+        #openwebrx-panel-2tone-message tbody {
+            display: table-row-group; height: auto; overflow: visible; width: auto;
+        }
         #openwebrx-panel-2tone-message thead tr,
         #openwebrx-panel-2tone-message tbody tr { display: table-row; }
         #openwebrx-panel-2tone-message th {

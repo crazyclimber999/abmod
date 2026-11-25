@@ -186,13 +186,18 @@ pubblica() {
 
     passo "Checking what Pages actually serves"
     # A push that succeeded says what was sent, not what the world can see.
+    # Wait on the version-specific package, not on InRelease: InRelease exists
+    # from the previous release, so a 200 there says nothing about whether THIS
+    # one is live. That mistake let a publish report success while the new .deb
+    # was still 404.
     codice=000
-    for tentativo in 1 2 3 4 5 6 7 8 9 10; do
-        codice="$(curl -s -o /dev/null -w '%{http_code}' "$base_pubblica/dists/bullseye/InRelease")"
+    for tentativo in 1 2 3 4 5 6 7 8 9 10 11 12; do
+        codice="$(curl -s -o /dev/null -w '%{http_code}' \
+                  "$base_pubblica/pool/main/abmod_${versione}_all.deb")"
         [ "$codice" = 200 ] && break
         sleep 15
     done
-    [ "$codice" = 200 ] || muori "Pages is not serving InRelease yet (HTTP $codice) - try again shortly"
+    [ "$codice" = 200 ] || muori "Pages is not serving abmod_${versione}_all.deb yet (HTTP $codice) - try again shortly"
 
     for percorso in dists/bullseye/InRelease dists/bullseye/Release dists/bullseye/Release.gpg \
                     dists/bullseye/main/binary-all/Packages.gz \
