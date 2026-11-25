@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ABMod APT repository</title>
+<style>
+  :root {
+    --bg: #fbfbf9;
+    --fg: #1c1b19;
+    --muted: #5d5a54;
+    --rule: #ddd9d2;
+    --code-bg: #f1efe9;
+    --accent: #7a3b1d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16151a;
+      --fg: #e9e7e2;
+      --muted: #a09c94;
+      --rule: #2e2c33;
+      --code-bg: #201f26;
+      --accent: #e0a07a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16151a;
+    --fg: #e9e7e2;
+    --muted: #a09c94;
+    --rule: #2e2c33;
+    --code-bg: #201f26;
+    --accent: #e0a07a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.65 ui-serif, Georgia, "Times New Roman", serif;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 44rem; margin: 0 auto; padding: 4rem 16px 6rem; }
+  h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 .3rem; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); margin: 0 0 2.5rem; font-size: 1.05rem; }
+  h2 {
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .11em;
+    font-family: ui-sans-serif, system-ui, sans-serif; color: var(--muted);
+    margin: 3rem 0 .9rem; padding-bottom: .5rem; border-bottom: 1px solid var(--rule);
+  }
+  p { margin: 0 0 1.1rem; }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--rule); border-radius: 6px;
+    padding: .85rem 1rem; overflow-x: auto; margin: 0 0 1rem;
+    font: 13px/1.6 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: .88em; }
+  p code { background: var(--code-bg); padding: .1em .35em; border-radius: 3px; }
+  a { color: var(--accent); }
+  .note {
+    border-left: 2px solid var(--rule); padding-left: 1rem;
+    color: var(--muted); font-size: .95rem;
+  }
+  footer {
+    margin-top: 4rem; padding-top: 1.2rem; border-top: 1px solid var(--rule);
+    color: var(--muted); font-size: .9rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>ABMod APT repository</h1>
+  <p class="sub">Modifications to OpenWebRX, installable with <code>apt-get</code>.</p>
+
+  <p>
+    ABMod adds to <a href="https://www.openwebrx.de">OpenWebRX</a> a bookmarks
+    panel inside the receiver, real access control, 5-tone and 2-tone decoders,
+    a map drawn without the Google Maps API, APRS in both directions, and an
+    importer for a repeater list that works out from the terrain which stations
+    are actually receivable.
+  </p>
+
+  <h2>Adding the repository</h2>
+
+  <pre><code>sudo curl -fsSL https://crazyclimber999.github.io/abmod/abmod-archive-keyring.asc \
+  -o /usr/share/keyrings/abmod.asc</code></pre>
+
+  <pre><code>echo "deb [signed-by=/usr/share/keyrings/abmod.asc] \
+https://crazyclimber999.github.io/abmod/ bullseye main" \
+  | sudo tee /etc/apt/sources.list.d/abmod.list</code></pre>
+
+  <pre><code>sudo apt-get update &amp;&amp; sudo apt-get install abmod</code></pre>
+
+  <h2>Before you install it</h2>
+
+  <p>
+    ABMod replaces 31 files belonging to the <code>openwebrx</code> package,
+    through dpkg diversions: the original is kept beside its replacement and
+    <code>apt-get remove abmod</code> puts it back. Two consequences worth
+    knowing in advance.
+  </p>
+
+  <p class="note">
+    <strong>It refuses to install over an ABMod put there by hand</strong>, and
+    names the files. Run <code>sudo apt-get install --reinstall openwebrx</code>
+    first — that touches no settings, bookmarks or users — then install the
+    package.
+  </p>
+
+  <p class="note">
+    <strong>OpenWebRX is held at the version ABMod was built against.</strong>
+    Whole files are replaced rather than patched, so a different OpenWebRX is a
+    different set of files. To upgrade OpenWebRX, remove ABMod first.
+  </p>
+
+  <h2>Source</h2>
+
+  <p>
+    Everything is at
+    <a href="https://github.com/crazyclimber999/abmod">github.com/crazyclimber999/abmod</a>,
+    with the documentation in
+    <a href="https://github.com/crazyclimber999/abmod/blob/main/docs/en/apt.md">English</a>
+    and
+    <a href="https://github.com/crazyclimber999/abmod/blob/main/docs/it/apt.md">Italian</a>.
+  </p>
+
+  <footer>
+    <p>
+      OpenWebRX is the work of
+      <a href="http://www.justjakob.de/">Jakob Ketterl, DD5JFK</a>, and its
+      contributors. ABMod is by
+      <a href="https://www.iu2qda.it">IU2QDA</a>, under the
+      <a href="https://github.com/crazyclimber999/abmod/blob/main/LICENSE.txt">GNU AGPL v3</a>
+      like OpenWebRX itself. No repeater data is distributed here.
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>
