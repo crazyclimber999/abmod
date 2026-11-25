@@ -1409,6 +1409,42 @@ function init_five_tone_panel_class() {
         return this.standards.slice();
     };
 
+    /* Il prefisso e un filtro dell'utente, non un'euristica del decoder. Su un
+     * canale dove ogni chiamata inizia per 31, scriverlo qui toglie di mezzo
+     * tutto il resto senza che il decoder debba indovinare: le sequenze scartate
+     * restano contate nella riga sotto, quindi non si perde niente in silenzio.
+     * E la differenza fra un filtro che vedi e una regola che decide per te. */
+    FiveToneMessagePanel.prototype.prefix = function() {
+        try {
+            return localStorage.getItem('5tone.prefix') || '';
+        } catch (e) {
+            return '';
+        }
+    };
+
+    FiveToneMessagePanel.prototype.setPrefix = function(value) {
+        try {
+            if (value) localStorage.setItem('5tone.prefix', value);
+            else localStorage.removeItem('5tone.prefix');
+        } catch (e) { /* niente localStorage: vale per questa sessione */ }
+    };
+
+    FiveToneMessagePanel.prototype.matches = function(standard, sequence) {
+        var attivi = this.enabledStandards();
+        var std = String(standard || '').split('/');
+        if (!std.some(function(x) { return attivi.indexOf(x) > -1; })) return false;
+        var pre = this.prefix();
+        return !pre || String(sequence || '').indexOf(pre) === 0;
+    };
+
+    FiveToneMessagePanel.prototype.applyFilter = function() {
+        var me = this;
+        $(this.el).find('tbody tr').each(function() {
+            $(this).toggle(me.matches($(this).data('standards'), $(this).find('.sequence').text()));
+        });
+        me.updateHiddenNote();
+    };
+
     FiveToneMessagePanel.prototype.setEnabledStandards = function(list) {
         try {
             localStorage.setItem('5tone.standards', JSON.stringify(list));
@@ -1432,15 +1468,19 @@ function init_five_tone_panel_class() {
                     }).get();
                     me.setEnabledStandards(scelti);
                     // hide rows that no longer match, without losing them
-                    $(me.el).find('tbody tr').each(function() {
-                        var std = ($(this).data('standards') || '').split('/');
-                        var visibile = std.some(function(x) { return scelti.indexOf(x) > -1; });
-                        $(this).toggle(visibile);
-                    });
-                    me.updateHiddenNote();
+                    me.applyFilter();
                 })
                 .appendTo($bar);
         });
+
+        var $pre = $('<input type="text" class="five-tone-prefix" maxlength="5" ' +
+                     'placeholder="prefix" title="Show only sequences starting with these digits">');
+        $pre.val(this.prefix());
+        $pre.on('input', function() {
+            me.setPrefix($(this).val().replace(/[^0-9A-Za-z]/g, ''));
+            me.applyFilter();
+        });
+        $bar.append($pre);
 
         $(this.el).append($bar);
         // A sequence that arrives while its standard is switched off would
@@ -1465,11 +1505,10 @@ function init_five_tone_panel_class() {
     };
 
     FiveToneMessagePanel.prototype.updateHiddenNote = function() {
-        var attivi = this.enabledStandards();
+        var me = this;
         var nascoste = 0;
         $(this.el).find('tbody tr').each(function() {
-            var std = ($(this).data('standards') || '').split('/');
-            if (!std.some(function(x) { return attivi.indexOf(x) > -1; })) nascoste++;
+            if (!me.matches($(this).data('standards'), $(this).find('.sequence').text())) nascoste++;
         });
         var $nota = $(this.el).find('.five-tone-hidden');
         if (!nascoste) {
@@ -1486,8 +1525,7 @@ function init_five_tone_panel_class() {
         var $b = $(this.el).find('tbody');
         var ora = new Date().toISOString().slice(11, 19);
         var standard = msg.standard || '';
-        var attivi = this.enabledStandards();
-        var visibile = standard.split('/').some(function(x) { return attivi.indexOf(x) > -1; });
+        var visibile = this.matches(standard, msg.sequence || '');
         // the full names do not fit the column when a call matches several
         // standards, so the cell shows short codes and the title the full list
         var sigle = {CCIR: 'CC', ZVEI1: 'Z1', ZVEI2: 'Z2', DZVEI: 'DZ', EIA: 'EI', CCITT: 'CT'};

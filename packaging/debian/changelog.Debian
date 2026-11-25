@@ -1,3 +1,10 @@
+abmod (1.0.6) bullseye; urgency=low
+
+  * Add a prefix filter to the 5-tone panel, so sequences that cannot be
+    yours can be hidden without the decoder guessing.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Wed, 25 Nov 2026 23:45:00 +0000
+
 abmod (1.0.5) bullseye; urgency=low
 
   * Keep the sub-audible tone on screen once read; replace it only when a

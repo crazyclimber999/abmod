@@ -9,6 +9,24 @@ ABMod è costruito e provato. Le ragioni delle scelte sono in
 Le date sono il giorno in cui la modifica è stata finita e messa su un
 ricevitore vero.
 
+## v1.0.6 — 25 novembre 2026
+
+### Aggiunto
+
+- **Un filtro per prefisso nel pannello 5 toni.** Su una rete dove ogni
+  chiamata inizia con le stesse cifre, scriverle nella casellina accanto ai
+  pulsanti degli standard nasconde tutto il resto. Sul canale per cui e stato
+  costruito porta la precisione CCIR dal 75% al 100%.
+
+  E un filtro, non una regola che il decoder applica da se, e la differenza
+  conta. L'euristica ovvia — scartare le sequenze fatte di meno di tre toni
+  distinti — sulla stessa registrazione arrivava al 90% e **non** e stata
+  adottata: chi gestisce la rete ha confermato che `31111` e un indirizzo
+  valido, e un sistema di chiamata selettiva che perde in silenzio una
+  chiamata vera costa molto piu di una riga di troppo che si vede a occhio che
+  non e tua. Il prefisso si vede, si toglie, resta salvato nel browser, e il
+  conteggio sotto continua a dire tutto quello che sta nascondendo.
+
 ## v1.0.5 — 25 novembre 2026
 
 ### Modificato

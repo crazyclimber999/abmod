@@ -8,6 +8,24 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
+## v1.0.6 — 2026-11-25
+
+### Added
+
+- **A prefix filter in the 5-tone panel.** On a network where every call
+  starts with the same digits, typing them in the small box beside the
+  standard buttons hides everything else. On the channel this was built
+  against that takes CCIR precision from 75% to 100%.
+
+  It is a filter, not a rule the decoder applies by itself, and the difference
+  matters. The obvious heuristic - reject any sequence built from fewer than
+  three distinct tones - would have reached 90% on the same data and was
+  **not** adopted: the network's own operator confirmed that `31111` is a
+  valid address, and a selective-call system that silently drops a real call
+  costs far more than a visible line that is obviously not yours. The prefix
+  is visible, reversible, kept in the browser, and the count underneath still
+  reports everything it is hiding.
+
 ## v1.0.5 — 2026-11-25
 
 ### Changed
