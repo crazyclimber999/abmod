@@ -54,6 +54,7 @@ CtcssDetector.prototype.reset = function() {
     this.filled = 0;
     this.sinceTest = 0;
     this.lastTone = null;
+    this.tunedAt = null;
     this.pending = null;
     this.pendingCount = 0;
 };
@@ -103,7 +104,32 @@ CtcssDetector.prototype.goertzel = function(frequency) {
     return Math.sqrt(s1 * s1 + s2 * s2 - k * s1 * s2);
 };
 
+/* La sintonia a cui il tono e stato sentito. Un tono vale per la frequenza su
+ * cui lo hai sentito: appena ti sposti non vuol piu dire niente, mentre
+ * finche resti li vale ancora anche quando la portante cade. */
+CtcssDetector.prototype.setTunedProbe = function(probe) {
+    this.tunedProbe = probe;
+};
+
 CtcssDetector.prototype.test = function() {
+    // cambiata sintonia: quello che sapevamo non vale piu
+    if (this.tunedProbe) {
+        var sintonia = this.tunedProbe();
+        if (sintonia !== null && sintonia !== undefined) {
+            if (this.tunedAt !== null && this.tunedAt !== undefined && sintonia !== this.tunedAt) {
+                this.tunedAt = sintonia;
+                this.pending = null;
+                this.pendingCount = 0;
+                if (this.lastTone !== null) {
+                    this.lastTone = null;
+                    if (this.onTone) this.onTone(null, 0);
+                }
+                return;
+            }
+            this.tunedAt = sintonia;
+        }
+    }
+
     var magnitudes = [];
     var i;
     for (i = 0; i < CtcssDetector.TONES.length; i++) {
@@ -127,11 +153,15 @@ CtcssDetector.prototype.test = function() {
         this.pendingCount = ok ? 1 : 0;
     }
 
-    var deciso = (this.pendingCount >= 2) ? this.pending : (ok ? this.lastTone : null);
-    if (deciso !== this.lastTone) {
-        this.lastTone = deciso;
+    /* Una volta letto, il tono RESTA. Il CTCSS esiste solo mentre c'e
+     * portante, ma e una proprieta del canale, non del momento: cancellarlo a
+     * fine trasmissione vorrebbe dire mostrarlo per due secondi e poi togliere
+     * proprio l'informazione che serviva. Se ne sente uno diverso, viene
+     * sostituito; se cambi sintonia, viene dimenticato. Altrimenti resta. */
+    if (this.pendingCount >= 2 && this.pending !== this.lastTone) {
+        this.lastTone = this.pending;
         if (this.onTone) {
-            this.onTone(deciso, deciso ? best / median : 0);
+            this.onTone(this.lastTone, best / median);
         }
     }
 };

@@ -713,6 +713,20 @@ function ctcssSpegni() {
     if (ctcssDetector) ctcssDetector.clear();
 }
 
+/* La frequenza a cui si sta ascoltando: centro piu scostamento del
+ * demodulatore. Serve solo per accorgersi che e cambiata. */
+function ctcssSintonia() {
+    try {
+        var pannello = $('#openwebrx-panel-receiver').demodulatorPanel();
+        var demod = (pannello && pannello.getDemodulator) ? pannello.getDemodulator() : null;
+        var scostamento = (demod && demod.get_offset_frequency) ? demod.get_offset_frequency() : 0;
+        if (typeof center_freq === 'undefined' || center_freq === null) return null;
+        return center_freq + (scostamento || 0);
+    } catch (e) {
+        return null;
+    }
+}
+
 function ctcssInit() {
     if (ctcssDetector || typeof CtcssDetector === 'undefined') return;
     ctcssDetector = new CtcssDetector(function(tono, margine) {
@@ -726,8 +740,10 @@ function ctcssInit() {
         $v.html(tono.toFixed(1) + ' Hz <span class="ctcss-margine">(' +
                 Math.round(margine) + 'x)</span>');
         $r.show();
-        divlog('Sub-audible tone: ' + tono.toFixed(1) + ' Hz');
+        divlog('Sub-audible tone: ' + tono.toFixed(1) + ' Hz on ' +
+               ((ctcssSintonia() || 0) / 1e6).toFixed(4) + ' MHz');
     });
+    ctcssDetector.setTunedProbe(ctcssSintonia);
     if (typeof ImaAdpcmCodec !== 'undefined') ctcssCodec = new ImaAdpcmCodec();
     if (audioEngine && audioEngine.getOutputRate) {
         ctcssDetector.setSampleRate(audioEngine.getOutputRate());

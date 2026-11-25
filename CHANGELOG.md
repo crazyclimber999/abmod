@@ -8,6 +8,18 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
+## v1.0.5 — 2026-11-25
+
+### Changed
+
+- **The sub-audible tone now stays on screen** once it has been read, instead
+  of disappearing when the carrier drops. CTCSS only exists while someone is
+  transmitting, but it is a property of the channel rather than of the moment:
+  clearing it at the end of each over showed it for two seconds and then took
+  away the very thing worth knowing. It is replaced when a different tone is
+  heard, and forgotten when the tuning moves - a tone belongs to the frequency
+  it was heard on. The log line names that frequency.
+
 ## v1.0.4 — 2026-11-25
 
 ### Fixed

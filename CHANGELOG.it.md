@@ -9,6 +9,18 @@ ABMod è costruito e provato. Le ragioni delle scelte sono in
 Le date sono il giorno in cui la modifica è stata finita e messa su un
 ricevitore vero.
 
+## v1.0.5 — 25 novembre 2026
+
+### Modificato
+
+- **Il subtono ora resta sullo schermo** una volta letto, invece di sparire
+  quando cade la portante. Il CTCSS esiste solo mentre qualcuno trasmette, ma
+  e una proprieta del canale, non del momento: cancellarlo a fine passaggio
+  voleva dire mostrarlo per due secondi e poi togliere proprio l'informazione
+  che serviva. Viene sostituito se se ne sente uno diverso, e dimenticato
+  quando cambi sintonia: un tono appartiene alla frequenza su cui lo hai
+  sentito. La riga di log nomina quella frequenza.
+
 ## v1.0.4 — 25 novembre 2026
 
 ### Corretto
