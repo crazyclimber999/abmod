@@ -1,3 +1,10 @@
+abmod (1.0.7) bullseye; urgency=low
+
+  * Remove the 5-tone prefix box added in 1.0.6, at the operator's request.
+    The decoder's purity gate is unaffected.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Thu, 26 Nov 2026 00:05:00 +0000
+
 abmod (1.0.6) bullseye; urgency=low
 
   * Add a prefix filter to the 5-tone panel, so sequences that cannot be

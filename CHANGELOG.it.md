@@ -9,6 +9,20 @@ ABMod è costruito e provato. Le ragioni delle scelte sono in
 Le date sono il giorno in cui la modifica è stata finita e messa su un
 ricevitore vero.
 
+## v1.0.7 — 25 novembre 2026
+
+### Rimosso
+
+- **La casella del prefisso nel pannello 5 toni**, aggiunta nella 1.0.6 e
+  tolta su richiesta: chi gestisce la rete preferisce vedere tutto quello che
+  il decoder produce e giudicarlo da se. I pulsanti per standard e il
+  conteggio di quello che nascondono restano come erano.
+
+  Il controllo di purezza spettrale dentro il decoder non e toccato, e non e
+  un filtro sui risultati: decide se in una finestra da 25 ms ci sia o no un
+  tono, ed e quello che sulla stessa registrazione ha portato le chiamate vere
+  trovate da 1 a 9.
+
 ## v1.0.6 — 25 novembre 2026
 
 ### Aggiunto

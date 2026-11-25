@@ -8,6 +8,19 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
+## v1.0.7 — 2026-11-25
+
+### Removed
+
+- **The prefix box in the 5-tone panel**, added in 1.0.6 and taken out at the
+  operator's request: he would rather see everything the decoder produces and
+  judge it himself. The per-standard buttons and the count of what they hide
+  stay as they were.
+
+  The spectral purity gate in the decoder is untouched and is not a filter on
+  results: it decides whether a 25 ms window contains a tone at all, and it is
+  what took the same recording from 1 true call to 9.
+
 ## v1.0.6 — 2026-11-25
 
 ### Added

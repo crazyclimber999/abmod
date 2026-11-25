@@ -1409,32 +1409,13 @@ function init_five_tone_panel_class() {
         return this.standards.slice();
     };
 
-    /* Il prefisso e un filtro dell'utente, non un'euristica del decoder. Su un
-     * canale dove ogni chiamata inizia per 31, scriverlo qui toglie di mezzo
-     * tutto il resto senza che il decoder debba indovinare: le sequenze scartate
-     * restano contate nella riga sotto, quindi non si perde niente in silenzio.
-     * E la differenza fra un filtro che vedi e una regola che decide per te. */
-    FiveToneMessagePanel.prototype.prefix = function() {
-        try {
-            return localStorage.getItem('5tone.prefix') || '';
-        } catch (e) {
-            return '';
-        }
-    };
-
-    FiveToneMessagePanel.prototype.setPrefix = function(value) {
-        try {
-            if (value) localStorage.setItem('5tone.prefix', value);
-            else localStorage.removeItem('5tone.prefix');
-        } catch (e) { /* niente localStorage: vale per questa sessione */ }
-    };
-
+    /* Il filtro per standard, in un posto solo: lo usano il clic sui pulsanti,
+     * le righe nuove e il conteggio di quelle nascoste, che prima lo
+     * ripetevano ognuno a modo suo. */
     FiveToneMessagePanel.prototype.matches = function(standard, sequence) {
         var attivi = this.enabledStandards();
         var std = String(standard || '').split('/');
-        if (!std.some(function(x) { return attivi.indexOf(x) > -1; })) return false;
-        var pre = this.prefix();
-        return !pre || String(sequence || '').indexOf(pre) === 0;
+        return std.some(function(x) { return attivi.indexOf(x) > -1; });
     };
 
     FiveToneMessagePanel.prototype.applyFilter = function() {
@@ -1472,15 +1453,6 @@ function init_five_tone_panel_class() {
                 })
                 .appendTo($bar);
         });
-
-        var $pre = $('<input type="text" class="five-tone-prefix" maxlength="5" ' +
-                     'placeholder="prefix" title="Show only sequences starting with these digits">');
-        $pre.val(this.prefix());
-        $pre.on('input', function() {
-            me.setPrefix($(this).val().replace(/[^0-9A-Za-z]/g, ''));
-            me.applyFilter();
-        });
-        $bar.append($pre);
 
         $(this.el).append($bar);
         // A sequence that arrives while its standard is switched off would
