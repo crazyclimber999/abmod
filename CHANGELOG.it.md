@@ -9,6 +9,57 @@ ABMod è costruito e provato. Le ragioni delle scelte sono in
 Le date sono il giorno in cui la modifica è stata finita e messa su un
 ricevitore vero.
 
+## v1.0.4 — 25 novembre 2026
+
+### Corretto
+
+- **Il blocco CTCSS era annidato dentro il gestore dei messaggi websocket**,
+  quindi il suo stato viveva in quella funzione invece che a livello di file.
+  Funzionava — chi lo alimenta sta nella stessa funzione — ma niente poteva
+  ispezionarlo o riusarlo, e una variabile che sembra globale senza esserlo è
+  una trappola per la modifica successiva. Spostato fuori.
+
+## v1.0.3 — 25 novembre 2026
+
+### Aggiunto
+
+- **Il subtono CTCSS, letto dall'audio e mostrato nel ricevitore** sotto la
+  frequenza, e scritto nel log del ricevitore quando cambia. Viene rivelato nel
+  browser con un banco di Goertzel sui 39 toni standard, su audio decimato a
+  1 kHz, in finestre da due secondi: un tono continuo non ha fretta, e la
+  lunghezza compra la risoluzione che le coppie piu vicine della tabella
+  richiedono.
+
+  Che funzionasse e stato misurato, non supposto. La catena NFM di OpenWebRX e
+  `FmDemod → Limit → NfmDeemphasis → Agc`: nessun passa-alto, e la de-enfasi e
+  un passa-basso, quindi esalta le frequenze subaudio invece di toglierle. Le
+  radio di solito filtrano il CTCSS perche non lo si senta; questa no. Su sei
+  minuti di traffico vero il tono e uscito a **107,2 Hz, 34,7 volte il rumore
+  circostante e a 0,20 Hz dal nominale** - misurato su audio preso dal
+  websocket e decodificato dall'ADPCM, cioe esattamente quello che riceve un
+  browser: la compressione non lo rovina.
+
+### Corretto
+
+- **Il decoder 5 toni riportava quasi solo spazzatura, e perdeva quasi tutte le
+  chiamate vere.** Confrontava il tono vincente solo col secondo *fra gli
+  undici dello stesso standard*, senza mai chiedersi se quel tono staccasse dal
+  fondo a banda larga. La voce ha energia ovunque, quindi ognuno dei sei
+  standard trovava il proprio tono "dominante" nello stesso respiro di parlato:
+  ecco perche arrivavano sei sequenze diverse nello stesso istante.
+
+  Il cancello aggiunto e la purezza spettrale: il bin piu forte contro la
+  **mediana di tutta la banda 500-3000 Hz**. Misurato su sei minuti di traffico
+  registrato, con la verita nota che su quel canale le chiamate sono CCIR e
+  iniziano per 31: una chiamata vera arriva a 122, il parlato si ferma a 38, il
+  canale muto a 6. La soglia e 20.
+
+  Non toglie solo spazzatura. Senza il cancello le finestre di rumore si
+  intercalavano ai toni veri e corrompevano le sequenze prima che venissero
+  emesse, quindi le chiamate non uscivano affatto. Su quella registrazione il
+  decoder e passato da **1 chiamata vera e 108 false a 9 vere e 3 false**, e la
+  precisione CCIR dal 9% al 75%.
+
 ## v1.0.2 — 25 novembre 2026
 
 ### Corretto

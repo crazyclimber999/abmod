@@ -8,6 +8,58 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
+## v1.0.4 — 2026-11-25
+
+### Fixed
+
+- **The CTCSS block was nested inside the websocket message handler**, so its
+  state lived in that function rather than at file scope. It worked - the
+  feeder is called from the same function - but nothing could inspect or reuse
+  it, and a variable that only appears to be global is a trap for the next
+  change. Moved out.
+
+## v1.0.3 — 2026-11-25
+
+### Added
+
+- **The sub-audible CTCSS tone, read from the audio and shown in the
+  receiver**, under the frequency, and written to the receiver's log when it
+  changes. It is detected in the browser with a Goertzel bank over the 39
+  standard tones, on audio decimated to 1 kHz, in two-second windows - a
+  continuous tone is in no hurry, and the length buys the resolution the
+  closest pairs in the table need.
+
+  That this works at all was measured, not assumed. OpenWebRX's NFM chain is
+  `FmDemod → Limit → NfmDeemphasis → Agc`: no high-pass anywhere, and the
+  de-emphasis is a low-pass, so it lifts the sub-audible end rather than
+  removing it. Most radios filter CTCSS out so you do not hear it; this one
+  does not. On six minutes of real traffic the tone came out at **107.2 Hz,
+  34.7 times the surrounding noise floor and 0.20 Hz from nominal** - measured
+  on audio pulled through the websocket and decoded from ADPCM, which is
+  exactly what a browser gets, so the compression does not cost it.
+
+### Fixed
+
+- **The 5-tone decoder was reporting almost nothing but rubbish, and missing
+  almost every real call.** It compared the winning tone only against the
+  runner-up *within the same standard's own eleven tones*, and never asked
+  whether that tone stood out from the broadband floor. Speech has energy
+  everywhere, so each of the six standards found its own "dominant" tone in
+  the same breath of voice - which is why six different sequences kept
+  arriving at the same instant.
+
+  The gate added is spectral purity: the strongest bin against the **median of
+  the whole 500-3000 Hz band**. Measured on six minutes of recorded traffic,
+  against the ground truth that every call on that channel is CCIR and starts
+  with 31: a true call reaches 122, speech peaks at 38, a silent channel at 6.
+  The threshold is 20.
+
+  It does not only remove rubbish. Without the gate the noise windows
+  interleaved with the real tones and corrupted the digit runs before they
+  could be emitted, so the calls never came out at all. On that recording the
+  decoder went from **1 true call and 108 false ones to 9 true and 3 false**,
+  and CCIR precision from 9% to 75%.
+
 ## v1.0.2 — 2026-11-25
 
 ### Fixed

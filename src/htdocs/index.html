@@ -200,6 +200,14 @@
                         </select>
                         <button class="openwebrx-button" onclick="set_frequency();" style="margin-left:3px;">Set</button>
                     </div>
+                    <!-- Il subtono CTCSS, letto dall'audio nel browser. Sta qui, sotto
+                         la frequenza, perche e una proprieta di cio che si sta
+                         ascoltando, non un evento: compare quando c'e e sparisce
+                         quando la portante cade. -->
+                    <div class="openwebrx-panel-line openwebrx-ctcss-line" id="openwebrx-ctcss" style="display:none;">
+                        <label style="font-size:11px; display:block; margin-bottom:3px;">Sub-audible tone</label>
+                        <span id="openwebrx-ctcss-value">&mdash;</span>
+                    </div>
                     <div class="openwebrx-panel-line openwebrx-freq-steps">
                         <button class="openwebrx-button" onclick="step_center_freq(-1000000);" title="Down 1 MHz">&#9660;&#9660;</button>
                         <button class="openwebrx-button" onclick="step_center_freq(-25000);" title="Down 25 kHz">&#9660;</button>
@@ -320,6 +328,10 @@
            message panel to 180px, which stopped being enough once the filter
            buttons and the hidden-rows notice sat above the table: the last
            row fell outside the panel. */
+        .openwebrx-ctcss-line #openwebrx-ctcss-value {
+            font-weight: bold; color: #0ff; letter-spacing: 0.5px;
+        }
+        .openwebrx-ctcss-line .ctcss-margine { color: #9c9; font-weight: normal; font-size: 10px; }
         #openwebrx-panel-5tone-message { width: 360px !important; height: auto !important; }
         .five-tone-filter { display: flex; gap: 3px; margin-bottom: 6px; flex-wrap: wrap; }
         .five-tone-filter button {

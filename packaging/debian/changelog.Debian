@@ -1,3 +1,20 @@
+abmod (1.0.4) bullseye; urgency=low
+
+  * Move the CTCSS block to file scope; it was nested inside the websocket
+    message handler.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Wed, 25 Nov 2026 22:50:00 +0000
+
+abmod (1.0.3) bullseye; urgency=low
+
+  * Read the CTCSS sub-audible tone from the audio and show it in the
+    receiver, under the frequency; measured at 107.2 Hz on real traffic.
+  * Fix the 5-tone decoder emitting mostly false sequences and missing real
+    calls: add a broadband spectral purity gate. On a recorded corpus it went
+    from 1 true call and 108 false to 9 true and 3 false.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Wed, 25 Nov 2026 22:30:00 +0000
+
 abmod (1.0.2) bullseye; urgency=low
 
   * Fix the 5-tone panel heading covering the first results when the

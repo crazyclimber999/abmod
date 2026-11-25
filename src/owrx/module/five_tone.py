@@ -80,6 +80,22 @@ DEFAULT_NOMINAL_MS = 100.0
 # tones or a burst of noise, not a digit.
 BLIP_RATIO = 0.6
 
+# A real tone is one line in the spectrum; voice and noise are spread across
+# it. This is the ratio between the strongest bin and the MEDIAN of the whole
+# useful band - not of the standard's own eleven tones, which is the comparison
+# that was missing and let every burst of speech look like a digit to all six
+# standards at once.
+#
+# Measured on six minutes of real traffic, with the ground truth that every
+# call on that channel is CCIR and starts with 31: a true call reaches 122,
+# speech peaks at 38, a silent channel at 6. The gate at 20 took the decoder
+# from 1 true call and 108 false ones to 9 true and 3 false on CCIR. It does
+# not only remove rubbish: without it the noise windows interleaved with the
+# real tones and corrupted the digit runs, so most real calls never came out
+# at all.
+MIN_PURITY = 20.0
+PURITY_BAND = (500.0, 3000.0)
+
 MIN_TONE_MS = 30.0     # EEA tones are 40 ms, CCIR 100 ms: stay permissive
 MAX_GAP_MS = 600.0     # a longer silence ends the sequence
 # 25 ms at 12 kHz gives 40 Hz wide FFT bins. This cannot go much lower: CCIR
@@ -200,6 +216,8 @@ class FiveToneDecoder:
         self.hop_size = max(1, int(sample_rate * HOP_MS / 1000.0))
         self.hop_ms = self.hop_size * 1000.0 / sample_rate
         self._hann = np.hanning(self.window_size)
+        # costruita alla prima finestra, quando si conosce la sua lunghezza
+        self._purity_band = None
 
         names = standards or list(TONE_SETS)
         self.states = [_StandardState(n, TONE_SETS[n]) for n in names]
@@ -221,6 +239,16 @@ class FiveToneDecoder:
 
     def _magnitudes(self, window):
         spectrum = np.abs(np.fft.rfft(window * self._hann))
+        if self._purity_band is None:
+            freqs = np.fft.rfftfreq(len(window), 1.0 / self.sample_rate)
+            self._purity_band = (freqs >= PURITY_BAND[0]) & (freqs <= PURITY_BAND[1])
+        band = spectrum[self._purity_band]
+        if band.size:
+            median = float(np.median(band))
+            if median > 0.0 and float(band.max()) / median < MIN_PURITY:
+                # nothing in this window stands out from the broadband floor,
+                # so there is no tone here whatever the tone bins say
+                return {frequency: 0.0 for frequency in self._bins}
         return {frequency: float(spectrum[b]) for frequency, b in self._bins.items()}
 
     @staticmethod

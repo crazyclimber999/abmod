@@ -28,6 +28,10 @@ var bandwidth;
 var center_freq;
 var fft_size;
 var fft_compression = "none";
+// La compressione dell audio serve anche al rivelatore di subtono, e quella
+// di openwebrx e dichiarata con var dentro il gestore della configurazione,
+// quindi invisibile da qui. Questa e sua.
+var ctcssCompression = "none";
 var fft_codec;
 var waterfall_setup_done = 0;
 var secondary_fft_size;
@@ -693,6 +697,58 @@ var currentprofile = {
 
 var COMPRESS_FFT_PAD_N = 10; //should be the same as in csdr.c
 
+/* ------------------------------------------------------------------ CTCSS */
+
+/* Il subtono viene letto qui, dagli stessi campioni che vanno all'altoparlante.
+   L'ADPCM va decodificato una seconda volta: AudioEngine tiene il suo decoder
+   per se, e un secondo decoder sugli stessi byte costa pochissimo e si
+   risincronizza da solo grazie ai marcatori SYNC che il server inserisce. */
+
+var ctcssDetector = null;
+var ctcssCodec = null;
+
+function ctcssSpegni() {
+    var $r = $('#openwebrx-ctcss');
+    if ($r.length) $r.hide();
+    if (ctcssDetector) ctcssDetector.clear();
+}
+
+function ctcssInit() {
+    if (ctcssDetector || typeof CtcssDetector === 'undefined') return;
+    ctcssDetector = new CtcssDetector(function(tono, margine) {
+        var $r = $('#openwebrx-ctcss');
+        var $v = $('#openwebrx-ctcss-value');
+        if (!tono) {
+            $v.html('&mdash;');
+            $r.hide();
+            return;
+        }
+        $v.html(tono.toFixed(1) + ' Hz <span class="ctcss-margine">(' +
+                Math.round(margine) + 'x)</span>');
+        $r.show();
+        divlog('Sub-audible tone: ' + tono.toFixed(1) + ' Hz');
+    });
+    if (typeof ImaAdpcmCodec !== 'undefined') ctcssCodec = new ImaAdpcmCodec();
+    if (audioEngine && audioEngine.getOutputRate) {
+        ctcssDetector.setSampleRate(audioEngine.getOutputRate());
+    }
+}
+
+function ctcssFeed(data) {
+    ctcssInit();
+    if (!ctcssDetector) return;
+    try {
+        if (ctcssCompression === 'adpcm') {
+            if (!ctcssCodec) return;
+            ctcssDetector.push(ctcssCodec.decodeWithSync(new Uint8Array(data)));
+        } else {
+            ctcssDetector.push(new Int16Array(data));
+        }
+    } catch (e) {
+        // un subtono mancato non deve mai fermare l'audio
+    }
+}
+
 function on_ws_recv(evt) {
     if (typeof evt.data === 'string') {
         // text messages
@@ -751,6 +807,7 @@ function on_ws_recv(evt) {
                         if ('audio_compression' in config) {
                             var audio_compression = config['audio_compression'];
                             audioEngine.setCompression(audio_compression);
+                            ctcssCompression = audio_compression;
                             divlog("Audio stream is " + ((audio_compression === "adpcm") ? "compressed" : "uncompressed") + ".");
                         }
                         if ('fft_compression' in config) {
@@ -931,6 +988,7 @@ function on_ws_recv(evt) {
             case 2:
                 // audio data
                 audioEngine.pushAudio(data);
+                ctcssFeed(data);
                 break;
             case 3:
                 // secondary FFT
