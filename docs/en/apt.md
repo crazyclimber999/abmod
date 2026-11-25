@@ -117,20 +117,33 @@ sudo apt-get update && sudo apt-get install abmod
 
 ### Publishing a new version
 
+Two halves, because the two things publishing needs rarely live on the same
+machine. Building and signing need `dpkg-deb`, `dpkg-scanpackages` and the
+private key; pushing needs credentials for GitHub.
+
 ```bash
-packaging/publish-pages.sh
+COPYFILE_DISABLE=1 tar czf - --exclude .git . | ssh pi@receiver 'mkdir -p ~/abmod && tar xzf - -C ~/abmod'
 ```
 
-It builds the package, builds a signed repository from it, pushes the result to
-`gh-pages`, and then **fetches what Pages actually serves** and fails if any of
-it is missing. A publish that reports success without that check has told you
-about its own intentions, not about the state of the world.
+```bash
+ssh pi@receiver 'cd ~/abmod && packaging/publish-pages.sh --build --out ~/abmod-apt'
+```
 
-`--dry-run` builds and commits locally without pushing.
+```bash
+scp -r pi@receiver:abmod-apt ./apt && packaging/publish-pages.sh --push ./apt
+```
 
-It has to run on a Debian machine, because building a `.deb` needs `dpkg-deb`
-and indexing a repository needs `dpkg-scanpackages` — in practice the receiver.
-It says so if you run it anywhere else.
+`--build` ends by importing the public key into a throwaway keyring and
+verifying both signatures against it — against the key as it will be
+published, not against whatever keyring happens to be on the build machine.
+
+`--push` ends by **fetching what Pages actually serves**, every path apt will
+ask for, and comparing the hash of the served package against the one built. A
+publish that reports success without that check has told you about its own
+intentions, not about the state of the world. `--dry-run` commits locally and
+pushes nothing.
+
+With neither flag it does both, which only works where both halves can.
 
 ### Where the signing key lives, and why it is not in CI
 

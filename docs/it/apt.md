@@ -121,20 +121,35 @@ sudo apt-get update && sudo apt-get install abmod
 
 ### Pubblicare una versione nuova
 
+In due metà, perché le due cose che servono per pubblicare raramente stanno
+sulla stessa macchina. Costruire e firmare richiedono `dpkg-deb`,
+`dpkg-scanpackages` e la chiave privata; pushare richiede le credenziali di
+GitHub.
+
 ```bash
-packaging/publish-pages.sh
+COPYFILE_DISABLE=1 tar czf - --exclude .git . | ssh pi@ricevitore 'mkdir -p ~/abmod && tar xzf - -C ~/abmod'
 ```
 
-Costruisce il pacchetto, ne costruisce un repository firmato, spinge il
-risultato su `gh-pages`, e poi **scarica quello che Pages serve davvero** e
-fallisce se manca qualcosa. Una pubblicazione che dichiara successo senza quel
-controllo ti ha raccontato le sue intenzioni, non lo stato del mondo.
+```bash
+ssh pi@ricevitore 'cd ~/abmod && packaging/publish-pages.sh --build --out ~/abmod-apt'
+```
 
-`--dry-run` costruisce e committa in locale senza pushare.
+```bash
+scp -r pi@ricevitore:abmod-apt ./apt && packaging/publish-pages.sh --push ./apt
+```
 
-Deve girare su una macchina Debian, perché costruire un `.deb` richiede
-`dpkg-deb` e indicizzare un repository richiede `dpkg-scanpackages`: in pratica
-il ricevitore. Se lo lanci altrove te lo dice.
+`--build` finisce importando la chiave pubblica in un keyring usa-e-getta e
+verificando le due firme contro quella — contro la chiave come verrà
+pubblicata, non contro il keyring che per caso sta sulla macchina di build.
+
+`--push` finisce **scaricando quello che Pages serve davvero**, ogni percorso
+che apt chiederà, e confrontando l'hash del pacchetto servito con quello
+costruito. Una pubblicazione che dichiara successo senza quel controllo ti ha
+raccontato le sue intenzioni, non lo stato del mondo. `--dry-run` committa in
+locale e non pusha niente.
+
+Senza nessuna delle due opzioni fa entrambe, cosa che funziona solo dove
+entrambe possono.
 
 ### Dove sta la chiave di firma, e perché non in CI
 
