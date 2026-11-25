@@ -1,0 +1,24 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
+
+Origin: ABMod
+Label: ABMod for OpenWebRX
+Suite: bullseye
+Codename: bullseye
+Architectures: all
+Components: main
+Description: ABMod packages for OpenWebRX
+Date: Wed, 25 Nov 2026 19:02:38 +0000
+MD5Sum:
+ 672955c1f7e3a5adbf41c7e228ba71bf             1428 main/binary-all/Packages
+ 8aa2ea681587d71289c7a64c4759d099              872 main/binary-all/Packages.gz
+SHA256:
+ 102348f508197d6b03f1e39ada1dcdb6c052461901bfb192f436f58e32b54745             1428 main/binary-all/Packages
+ 4a723d8d214585abd0f19a6ff72db13a5573b144f1ee517b487e79c8046d4bcf              872 main/binary-all/Packages.gz
+-----BEGIN PGP SIGNATURE-----
+
+iHUEARYIAB0WIQQyqdl94rLbdFrE8eRy7eKEZQ0WbAUCawcwzgAKCRBy7eKEZQ0W
+bCvMAQDZFnMTDQEwPuCMFWaMTS+lntvCAYCS1sieXnfGcMMDMwD/XMsz2rzIkz3e
+X4NOcw3kHtLHeEm5HqJf3Mguohf2qw8=
+=Utea
+-----END PGP SIGNATURE-----
