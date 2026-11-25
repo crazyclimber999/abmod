@@ -10,6 +10,18 @@ Dates are the day the change was finished and running on a live receiver.
 
 ## Unreleased
 
+### Documented
+
+- **Why the igate stops when nobody is listening**, which is upstream
+  behaviour and not a fault: OpenWebRX's background service handler registers
+  with the SDR as an `INACTIVE` client, and the source only starts for a `USER`
+  or `BACKGROUND` one, so services never start the radio - they attach to one
+  already running for a listener. The cure is the `always-on` device setting,
+  which exists but sits behind "Additional optional settings" where nobody
+  finds it. Written up with what it costs: the dongle runs 24/7 and the load
+  settles around 2.4 on a Pi 3, which on an under-powered Pi is what makes USB
+  devices drop.
+
 ### Added
 
 - **A Debian package, so a receiver installs ABMod with `apt-get install`.**

@@ -56,7 +56,31 @@ alle impostazioni qui sopra, e **trasmette sotto il tuo nominativo**.
 | **Beacon interval** | Ogni quanto la posizione si ripete, in minuti. Una stazione fissa non ha bisogno di gridare: 30 è normale, sotto i 10 è poca educazione su una rete condivisa. Limitato fra 5 e 240. |
 | **Beacon symbol, text, antenna height, gain, direction** | Cosa porta con sé il beacon. |
 
-Due cose non evidenti:
+### L'igate si ferma quando nessuno ascolta
+
+Questa fa perdere settimane, quindi la dico chiara: **senza ascoltatori
+collegati il ricevitore spegne l'SDR, e con lui si ferma l'igate.** Le posizioni
+invecchiano su aprs.fi e la stazione sembra morta, mentre ogni impostazione di
+questa pagina risulta corretta.
+
+Non è un guasto. Il gestore dei servizi in background di OpenWebRX si registra
+sull'SDR come client `INACTIVE`, e la sorgente parte solo per un client `USER`
+o `BACKGROUND`: i servizi non accendono mai la radio, si agganciano a una radio
+già accesa per un ascoltatore. Appena l'ultimo se ne va, `checkStatus()` la
+spegne.
+
+Il rimedio è un'impostazione che esiste già ed è facile non vedere, perché è un
+campo *opzionale*: **Settings → dispositivo SDR → Additional optional settings
+→ "Keep device running at all times" → Add → spunta → salva.** Scrive
+`always-on` nel dispositivo, e da quel momento la sorgente non si spegne più.
+
+Quanto costa: la chiavetta lavora 24 ore su 24, il decoder packet con lei, e il
+carico si assesta intorno a 2,4 su un Raspberry Pi 3 invece che vicino a zero.
+Su un Pi già a corto di alimentazione è esattamente la combinazione che fa
+cadere i dispositivi USB: controlla `vcgencmd get_throttled` prima e dopo, e se
+l'ultima cifra non è 0 hai un problema di tensione da risolvere prima.
+
+### Altre due cose non evidenti
 
 - L'igate funziona solo per un **decoder in background**, quindi serve un
   servizio packet configurato e attivo. Da una sessione del browser non viene

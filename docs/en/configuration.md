@@ -57,7 +57,31 @@ the settings above, and it **transmits under your callsign**.
 | **Beacon interval** | How often the position repeats, in minutes. A fixed station does not need to shout: 30 is normal, under 10 is poor manners on a shared network. Clamped to 5–240. |
 | **Beacon symbol, text, antenna height, gain, direction** | What the beacon carries. |
 
-Two things that are not obvious:
+### The igate stops when nobody is listening
+
+This one costs people weeks, so it is worth stating plainly: **with no
+listeners connected, the receiver shuts the SDR down, and the igate stops with
+it.** Positions then age out of aprs.fi and the station looks dead, while every
+setting on this page reads as correct.
+
+It is not a fault. OpenWebRX's background service handler registers itself with
+the SDR as an `INACTIVE` client, and the source only starts for a `USER` or
+`BACKGROUND` one, so services never start the radio — they attach to a radio
+already running for a listener. The moment the last listener leaves,
+`checkStatus()` stops it.
+
+The cure is a setting that already exists and is easy to miss, because it is an
+*optional* field: **Settings → SDR device → Additional optional settings →
+"Keep device running at all times" → Add → tick → save.** That writes
+`always-on` into the device, and the source then never idles down.
+
+What it costs: the dongle runs 24 hours a day, the packet decoder with it, and
+the load settles around 2.4 on a Raspberry Pi 3 instead of near zero. On a Pi
+that is already short of power this is exactly the combination that makes USB
+devices drop out — check `vcgencmd get_throttled` before and after, and if the
+low nibble is anything but 0 you have an under-voltage problem to fix first.
+
+### Two more things that are not obvious
 
 - The igate only runs for a **background decoder**, so a packet service must be
   configured and running. Nothing is forwarded from a browser session.

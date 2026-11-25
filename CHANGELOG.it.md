@@ -11,6 +11,18 @@ ricevitore vero.
 
 ## Non ancora rilasciato
 
+### Documentato
+
+- **Perché l'igate si ferma quando nessuno ascolta**, che è comportamento
+  originale di OpenWebRX e non un guasto: il gestore dei servizi in background
+  si registra sull'SDR come client `INACTIVE`, e la sorgente parte solo per un
+  client `USER` o `BACKGROUND`, quindi i servizi non accendono mai la radio: si
+  agganciano a una già accesa per un ascoltatore. Il rimedio è l'impostazione
+  `always-on` del dispositivo, che esiste ma sta dietro "Additional optional
+  settings", dove non la trova nessuno. Scritto con quello che costa: chiavetta
+  accesa 24 ore su 24 e carico intorno a 2,4 su un Pi 3, che su un Pi a corto di
+  alimentazione è ciò che fa cadere i dispositivi USB.
+
 ### Aggiunto
 
 - **Un pacchetto Debian, così un ricevitore installa ABMod con
