@@ -18,9 +18,11 @@ The waiting matters. A listener who reloads the page, or loses a train
 connection for ten seconds, is gone and back inside a few seconds, and parking
 in between would cost them a device restart each time.
 
-Everything here writes the RUNNING properties only, never settings.json. A
-parked receiver that is restarted comes back on its default, which is the
-right way round: the parking is a temporary state, not a configuration.
+Nothing here writes settings.json. A parked receiver that is restarted comes
+back on its default, which is the right way round: the parking is a temporary
+state, not a configuration. Note that retuning does write the live, in-memory
+configuration - the property stack's top layer IS the profile object - so the
+saved default has to be read back off disk. See `_default_frequency`.
 
 What this costs: the gateway stops the moment anyone connects, including a
 passing visitor, and it is their connection that decides it rather than the
@@ -86,20 +88,33 @@ def _default_frequency(sdr):
     """
     The centre frequency Save Defaults wrote for the profile in use.
 
-    Read from the configuration rather than remembered from before parking: a
-    visitor may have retuned the receiver, and the operator may have saved a
-    new default in the meantime. The configuration is what "the default" means.
+    Read from settings.json on disk, and deliberately not from `Config.get()`.
+
+    The live configuration looks like the obvious place and is the wrong one.
+    `sdr.props` is a stack whose top layer is the profile's own PropertyLayer -
+    the very object that lives at config["sdrs"][id]["profiles"][pid] - so
+    every retune, this module's parking included, writes straight through into
+    the live configuration. Ask it what the default is and it answers with
+    wherever the receiver happens to be pointing, which is how the first
+    version of this came back from parking onto the parked frequency instead of
+    the default.
+
+    settings.json is only written by Save Defaults, which is exactly the
+    operator's intent this needs to honour, and an operator who saves a new
+    default while the receiver is parked gets that new one on the way back.
     """
     try:
-        from owrx.config import Config
+        import json
 
-        config = Config.get()
-        sdrs = config["sdrs"]
-        device = sdrs[sdr.getId()]
-        profile = device["profiles"][sdr.getProfileId()]
+        from owrx.config.core import CoreConfig
+
+        path = "{0}/settings.json".format(CoreConfig().get_data_directory())
+        with open(path, "r") as f:
+            saved = json.load(f)
+        profile = saved["sdrs"][sdr.getId()]["profiles"][sdr.getProfileId()]
         return int(profile["center_freq"])
     except Exception:
-        logger.exception("could not read the profile's default centre frequency")
+        logger.exception("could not read the profile's saved centre frequency")
         return None
 
 
@@ -163,11 +178,32 @@ def client_arrived():
         logger.exception("could not return the receiver to its default frequency")
 
 
-def client_gone():
-    """The last listener may have left: start the clock."""
-    global _timer
+def startup():
+    """
+    Arm the clock once at start-up.
+
+    `client_gone` is otherwise the only thing that arms it, which would leave a
+    freshly restarted receiver sitting on its default frequency until some
+    visitor happened to connect and leave again. That is the wrong way round:
+    the receiver nobody has visited since the last restart is exactly the one
+    that should be gatewaying.
+    """
     if not _enabled():
         return
+    logger.debug("start-up: arming the idle clock")
+    _arm()
+
+
+def client_gone():
+    """The last listener may have left: start the clock."""
+    if not _enabled():
+        return
+    _arm()
+
+
+def _arm():
+    """Start the clock, unless somebody is listening."""
+    global _timer
     try:
         from owrx.client import ClientRegistry
 

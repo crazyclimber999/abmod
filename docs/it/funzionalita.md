@@ -373,20 +373,31 @@ Tre cose che vengono giuste per costruzione:
   ricevitore parcheggiato che viene riavviato torna sul suo default. Il
   parcheggio è uno stato temporaneo, non una configurazione, e si comporta come
   tale.
-- **Il default viene riletto dalla configurazione al ritorno**, non ricordato
-  da prima del parcheggio: nel frattempo un visitatore può aver risintonizzato
-  il ricevitore e chi gestisce la stazione può aver salvato un default nuovo.
-  Quello che dice la configurazione è cosa significa "il default".
+- **Il default viene riletto da `settings.json` al ritorno**, non dalla
+  configurazione viva e non ricordato da prima del parcheggio. La
+  configurazione viva sembra il posto ovvio ed è quello sbagliato: il livello
+  più alto della pila di proprietà è l'oggetto stesso del profilo, quindi ogni
+  risintonizzazione ci scrive dentro, e chiesta quale sia il default risponde
+  con il punto in cui la radio è puntata. `settings.json` lo scrive solo Save
+  Defaults, che è l'intenzione che vale la pena rispettare: chi salva un
+  default nuovo mentre il ricevitore è parcheggiato si ritrova quello al
+  ritorno.
 - **Si rifiuta di parcheggiare una radio spenta.** Senza *Keep device running
   at all times* la sorgente si ferma appena l'ultimo ascoltatore se ne va,
   quindi spostarle la frequenza non otterrebbe niente. Lo scrive nel log
   invece di farlo.
+- **L'orologio parte anche all'avvio**, non solo quando un ascoltatore se ne
+  va. Un ricevitore appena riavviato che nessuno ha ancora visitato è proprio
+  quello che dovrebbe gateare, e aspettare che arrivi e se ne vada un
+  visitatore prima di parcheggiare sarebbe il contrario di quel che serve.
+- **Un ricevitore che ha già la frequenza APRS come default non fa niente.**
+  Non c'è dove parcheggiare né dove tornare, quindi la regola si tira da parte
+  invece di far ripartire la radio per nulla.
 
 Il prezzo è reale ed è scritto nella pagina delle impostazioni: **qualunque**
 visitatore che si collega ferma il gateway, non solo chi gestisce la stazione.
 Su un ricevitore pubblico frequentato può voler dire che gatea poco. È spento
-per difetto, e comincia a funzionare dalla prima volta che l'ultimo ascoltatore
-se ne va.
+per difetto.
 
 ## 16. Cose più piccole
 

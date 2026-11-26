@@ -355,18 +355,28 @@ Three things this gets right by construction:
 - **Only the running properties are written, never `settings.json`.** A parked
   receiver that is restarted comes back on its default. The parking is a
   temporary state, not a configuration, and it behaves like one.
-- **The default is re-read from the configuration when going back**, not
-  remembered from before parking: a visitor may have retuned the receiver and
-  the operator may have saved a new default in the meantime. What the
-  configuration says is what "the default" means.
+- **The default is re-read from `settings.json` when going back**, not from the
+  live configuration and not remembered from before parking. The live
+  configuration looks like the obvious place and is the wrong one: the property
+  stack's top layer is the profile's own object, so every retune writes
+  straight through into it, and asked what the default is it answers with
+  wherever the receiver happens to be pointing. `settings.json` is written only
+  by Save Defaults, which is the intent worth honouring - so an operator who
+  saves a new default while the receiver is parked gets that new one back.
 - **It refuses to park a radio that is switched off.** Without *Keep device
   running at all times* the source stops as soon as the last listener leaves,
   so moving its frequency would achieve nothing. It says so in the log instead.
+- **The clock is armed at start-up too**, not only when a listener leaves. A
+  receiver that has just been restarted and that nobody has visited since is
+  exactly the one that should be gatewaying, and waiting for a visitor to
+  arrive and leave again before parking would have it the wrong way round.
+- **A receiver whose default already is the APRS frequency does nothing.**
+  There is nowhere to park and nothing to go back to, so the rule stays out of
+  the way instead of restarting the device for no reason.
 
 The cost is real and stated on the settings page: **any** visitor connecting
 stops the gateway, not only the operator. On a busy public receiver that can
-mean it rarely runs. It is off by default, and it starts working from the next
-time the last listener leaves.
+mean it rarely runs. It is off by default.
 
 ## 16. Smaller things
 

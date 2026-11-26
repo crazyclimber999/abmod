@@ -11,6 +11,7 @@ from owrx.config import Config
 from owrx.config.commands import MigrateCommand
 from owrx.feature import FeatureDetector
 from owrx.sdr import SdrService
+from owrx import idlegate
 from socketserver import ThreadingMixIn
 from owrx.service import Services
 from owrx.websocket import WebSocketConnection
@@ -123,6 +124,10 @@ Support and info:       https://groups.io/g/openwebrx
     # watches the configured callsigns on aprs.fi; does nothing until a key
     # and at least one callsign are configured
     AprsFiPoller.start()
+
+    # nobody is connected yet, so start the clock that parks the receiver on
+    # the APRS frequency; does nothing unless that rule is switched on
+    idlegate.startup()
 
     try:
         server = ThreadedHttpServer(("0.0.0.0", coreConfig.get_web_port()), RequestHandler)

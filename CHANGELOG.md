@@ -8,6 +8,24 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
+## v1.0.13 — 2026-11-26
+
+### Fixed
+
+- **Coming back from parking went to the parked frequency, not the default.**
+  `sdr.props` is a stack whose top layer is the profile's own object, the one
+  that lives inside the live configuration, so every retune - the parking
+  included - writes straight through into it. Asked what the default was, the
+  configuration answered with wherever the receiver was pointing. The saved
+  centre frequency is now read from `settings.json`, which only Save Defaults
+  writes, so an operator who saves a new default while the receiver is parked
+  gets that new one on the way back.
+- **The APRS idle clock is armed at start-up too.** Until now only a listener
+  leaving started it, so a receiver that had just been restarted and that
+  nobody had visited since never parked at all - which is precisely the
+  situation the rule exists for. It is now armed once when the receiver comes
+  up, and still does nothing unless the rule is switched on.
+
 ## v1.0.12 — 2026-11-26
 
 ### Added

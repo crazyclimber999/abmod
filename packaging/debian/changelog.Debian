@@ -1,3 +1,14 @@
+abmod (1.0.13) bullseye; urgency=low
+
+  * Fix the APRS parking coming back onto the parked frequency instead of the
+    saved default: the saved centre frequency is now read from settings.json,
+    because retuning writes the live configuration.
+  * Arm the APRS idle clock at start-up as well, not only when a listener
+    leaves. A receiver that had just been restarted and that nobody had
+    visited since never parked, which is the one case the rule exists for.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Thu, 26 Nov 2026 14:30:00 +0000
+
 abmod (1.0.12) bullseye; urgency=low
 
   * Add the option to park the receiver on the APRS frequency while nobody is

@@ -9,6 +9,24 @@ ABMod è costruito e provato. Le ragioni delle scelte sono in
 Le date sono il giorno in cui la modifica è stata finita e messa su un
 ricevitore vero.
 
+## v1.0.13 — 2026-11-26
+
+### Corretto
+
+- **Tornando dal parcheggio il ricevitore andava sulla frequenza parcheggiata,
+  non sul default.** `sdr.props` è una pila il cui livello più alto è l'oggetto
+  del profilo, quello che sta dentro la configurazione viva: ogni
+  risintonizzazione, parcheggio compreso, ci scrive dentro. Chiesto quale fosse
+  il default, la configurazione rispondeva con il punto in cui la radio era
+  puntata. Ora la frequenza salvata si legge da `settings.json`, che scrive
+  solo Save Defaults, quindi chi salva un default nuovo mentre il ricevitore è
+  parcheggiato si ritrova quello al ritorno.
+- **L'orologio del parcheggio APRS parte anche all'avvio.** Fino a ora lo
+  avviava solo un ascoltatore che se ne andava, quindi un ricevitore appena
+  riavviato che nessuno aveva ancora visitato non parcheggiava mai - cioè
+  proprio la situazione per cui la regola esiste. Ora parte una volta quando il
+  ricevitore si accende, e continua a non fare niente se la regola è spenta.
+
 ## v1.0.12 — 26 novembre 2026
 
 ### Aggiunto
