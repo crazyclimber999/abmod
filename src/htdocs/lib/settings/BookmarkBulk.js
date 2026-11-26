@@ -12,63 +12,63 @@ $(function() {
     var $table = $('table.bookmark-table');
     if (!$table.length) return;
 
-    var $tutti = $table.find('.bookmark-select-all');
-    var $pulsante = $('.bookmark-delete-selected');
-    var $conteggio = $('.bookmark-selected-count');
+    var $all = $table.find('.bookmark-select-all');
+    var $button = $('.bookmark-delete-selected');
+    var $count = $('.bookmark-selected-count');
 
-    var selezionate = function() {
+    var selectedRows = function() {
         return $table.find('.bookmark-select:checked').closest('tr');
     };
 
-    var aggiorna = function() {
-        var n = selezionate().length;
-        var totale = $table.find('.bookmark-select').length;
-        $pulsante.prop('disabled', n === 0).text(
+    var refresh = function() {
+        var n = selectedRows().length;
+        var total = $table.find('.bookmark-select').length;
+        $button.prop('disabled', n === 0).text(
             n ? 'Delete the ' + n + ' selected' : 'Delete selected');
-        $conteggio.text(n ? n + ' of ' + totale + ' selected' : '');
+        $count.text(n ? n + ' of ' + total + ' selected' : '');
         // the header box reflects the rows rather than driving them: all,
         // none, or neither
-        $tutti.prop('checked', n > 0 && n === totale);
-        $tutti.prop('indeterminate', n > 0 && n < totale);
+        $all.prop('checked', n > 0 && n === total);
+        $all.prop('indeterminate', n > 0 && n < total);
     };
 
-    $tutti.on('change', function() {
+    $all.on('change', function() {
         $table.find('.bookmark-select').prop('checked', this.checked);
-        aggiorna();
+        refresh();
     });
 
-    $table.on('change', '.bookmark-select', aggiorna);
+    $table.on('change', '.bookmark-select', refresh);
 
     // shift-click selects a range, the way a file manager does: with a few
     // hundred rows, ticking them one at a time is the thing being avoided
-    var ultima = null;
+    var lastClicked = null;
     $table.on('click', '.bookmark-select', function(e) {
-        var caselle = $table.find('.bookmark-select').toArray();
-        var indice = caselle.indexOf(this);
-        if (e.shiftKey && ultima !== null && ultima !== indice) {
-            var da = Math.min(ultima, indice), a = Math.max(ultima, indice);
-            var stato = this.checked;
-            for (var i = da; i <= a; i++) caselle[i].checked = stato;
-            aggiorna();
+        var boxes = $table.find('.bookmark-select').toArray();
+        var index = boxes.indexOf(this);
+        if (e.shiftKey && lastClicked !== null && lastClicked !== index) {
+            var from = Math.min(lastClicked, index), to = Math.max(lastClicked, index);
+            var state = this.checked;
+            for (var i = from; i <= to; i++) boxes[i].checked = state;
+            refresh();
         }
-        ultima = indice;
+        lastClicked = index;
     });
 
-    $pulsante.on('click', function() {
-        var $righe = selezionate();
-        if (!$righe.length) return;
+    $button.on('click', function() {
+        var $rows = selectedRows();
+        if (!$rows.length) return;
 
-        var nomi = $righe.map(function() {
+        var names = $rows.map(function() {
             return $(this).find('[data-editor=name]').text();
         }).get();
-        var anteprima = nomi.slice(0, 5).join('\n');
-        if (nomi.length > 5) anteprima += '\n... and ' + (nomi.length - 5) + ' more';
-        if (!confirm('Delete these ' + nomi.length + ' bookmarks? This cannot be undone.\n\n' +
-                     anteprima)) {
+        var preview = names.slice(0, 5).join('\n');
+        if (names.length > 5) preview += '\n... and ' + (names.length - 5) + ' more';
+        if (!confirm('Delete these ' + names.length + ' bookmarks? This cannot be undone.\n\n' +
+                     preview)) {
             return;
         }
 
-        var ids = $righe.map(function() { return $(this).data('id'); }).get();
+        var ids = $rows.map(function() { return $(this).data('id'); }).get();
         var $b = $(this).prop('disabled', true).text('Deleting...');
         $.ajax({
             url: 'bookmarks/selected',
@@ -77,20 +77,20 @@ $(function() {
             contentType: 'application/json',
             dataType: 'json'
         }).done(function(r) {
-            $righe.remove();
-            aggiorna();
+            $rows.remove();
+            refresh();
             $('.bookmark-bulk-status').removeClass('text-danger').addClass('text-success')
                 .text('Deleted ' + r.removed + '. ' + r.total + ' bookmarks left.');
         }).fail(function(xhr) {
-            var messaggio = 'Could not delete them.';
-            try { messaggio = JSON.parse(xhr.responseText).error || messaggio; } catch (e) {}
+            var message = 'Could not delete them.';
+            try { message = JSON.parse(xhr.responseText).error || message; } catch (e) {}
             $('.bookmark-bulk-status').removeClass('text-success').addClass('text-danger')
-                .text(messaggio);
+                .text(message);
         }).always(function() {
             $b.prop('disabled', false);
-            aggiorna();
+            refresh();
         });
     });
 
-    aggiorna();
+    refresh();
 });

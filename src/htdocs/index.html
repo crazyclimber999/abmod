@@ -199,18 +199,18 @@
                             <option value="1000000000">GHz</option>
                         </select>
                         <button class="openwebrx-button" onclick="set_frequency();" style="margin-left:3px;">Set</button>
-                        <!-- Acceso solo quando la radio e in campionamento
-                             diretto: sotto i 24 MHz il tuner non arriva e si
-                             passa all'ingresso dell'ADC. Stesse dimensioni del
-                             pulsante Set perche gli sta accanto. -->
+                        <!-- Lit only while the radio is in direct sampling:
+                             below 24 MHz the tuner cannot reach, and the ADC
+                             input is used instead. The same size as the Set
+                             button, since it sits next to it. -->
                         <span class="openwebrx-button openwebrx-ds-indicator" id="openwebrx-ds"
                               style="display:none; margin-left:3px;"
                               title="Direct sampling: the tuner cannot reach this frequency, the ADC input is in use">DS</span>
                     </div>
-                    <!-- Il subtono CTCSS, letto dall'audio nel browser. Sta qui, sotto
-                         la frequenza, perche e una proprieta di cio che si sta
-                         ascoltando, non un evento: compare quando c'e e sparisce
-                         quando la portante cade. -->
+                    <!-- The CTCSS tone, read from the audio in the browser. It
+                         belongs here, under the frequency, because it is a
+                         property of what is being listened to rather than an
+                         event of its own. -->
                     <div class="openwebrx-panel-line openwebrx-ctcss-line" id="openwebrx-ctcss" style="display:none;">
                         <label style="font-size:11px; display:block; margin-bottom:3px;">Sub-audible tone</label>
                         <span id="openwebrx-ctcss-value">&mdash;</span>

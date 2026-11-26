@@ -216,7 +216,7 @@ class FiveToneDecoder:
         self.hop_size = max(1, int(sample_rate * HOP_MS / 1000.0))
         self.hop_ms = self.hop_size * 1000.0 / sample_rate
         self._hann = np.hanning(self.window_size)
-        # costruita alla prima finestra, quando si conosce la sua lunghezza
+        # built on the first window, once its length is known
         self._purity_band = None
 
         names = standards or list(TONE_SETS)

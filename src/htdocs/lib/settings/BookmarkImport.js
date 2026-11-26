@@ -23,20 +23,20 @@ $(function() {
     // loaded. buildMapping() runs only once there is a file, so until then the
     // fields still showed whatever the template hard-codes - which made a
     // saved default of 20 dB look as though it had not been stored at all.
-    var applicaReach = function(dove) {
-        var r = (dove || setup).reach || {};
+    var applyReach = function(from) {
+        var r = (from || setup).reach || {};
         if (r.margin !== undefined) $page.find('.import-reach-margin').val(r.margin);
         if (r.distance !== undefined) $page.find('.import-reach-distance').val(r.distance);
         $page.find('.import-reach-horizon').prop('checked', r.horizon === true);
         $page.find('.import-reach-nearest').prop('checked', r.nearest === true);
     };
-    applicaReach();
+    applyReach();
     var SKIP = '__skip__';
     var table = null;      // {columns, rows}
     var PREVIEW_ROWS = 25;
     // which page of the preview is on screen. Reset whenever the rows
     // themselves change, kept when only the page is turned.
-    var pagina = 0;
+    var page = 0;
 
     // published lists differ in case and padding, so the remembered mapping is
     // keyed on a normalised form
@@ -116,8 +116,11 @@ $(function() {
         return out;
     };
 
-    // a first guess from the header text; every published list words these
-    // differently, which is exactly why the dropdowns exist
+    // A first guess from the header text; every published list words these
+    // differently, which is exactly why the dropdowns exist. The patterns
+    // below include Italian spellings - nome, regione, provincia, nominativo -
+    // because the lists this was written against are Italian. They are header
+    // text to match, not language: add your own and the guess improves.
     var guess = function(patterns, fallback) {
         var header = table.rows[headerRow()] || [];
         for (var i = 0; i < header.length; i++) {
@@ -156,12 +159,12 @@ $(function() {
         // The saved setup overrides the guesses, but only where it still fits
         // this file: a column index past the end belongs to a different layout
         // and the guess is the better answer.
-        var campi = setup.fields || {};
-        $.each(campi, function(nome, valore) {
-            var $el = $mapping.find('[data-field=' + nome + ']');
+        var fields = setup.fields || {};
+        $.each(fields, function(fieldName, value) {
+            var $el = $mapping.find('[data-field=' + fieldName + ']');
             if (!$el.length) return;
-            if (nome === 'separator' || nome === 'unit') { $el.val(valore); return; }
-            var index = parseInt(valore, 10);
+            if (fieldName === 'separator' || fieldName === 'unit') { $el.val(value); return; }
+            var index = parseInt(value, 10);
             if (isNaN(index) || index >= table.columns.length) return;
             $el.val(index);
         });
@@ -174,18 +177,18 @@ $(function() {
         // only when something was saved: otherwise every region stays ticked,
         // which is the right default for a file never imported before
         if ((setup.regions || []).length) {
-            var volute = {};
-            setup.regions.forEach(function(r) { volute[r] = true; });
+            var wantedRegions = {};
+            setup.regions.forEach(function(r) { wantedRegions[r] = true; });
             $mapping.find('.import-region').each(function() {
-                $(this).prop('checked', !!volute[this.value]);
+                $(this).prop('checked', !!wantedRegions[this.value]);
             });
         }
         buildModulations();
 
         // the listenability settings are remembered like everything else
-        applicaReach();
+        applyReach();
 
-        pagina = 0;
+        page = 0;
         refresh();
     };
 
@@ -338,11 +341,11 @@ $(function() {
             // The preselection comes from the remembered mapping, which starts
             // as the one worked out from the ik2ane legend. A value it does not
             // know is left for the operator to decide.
-            var sconosciuti = [];
+            var unknown = [];
             $box.find('.import-modmap').each(function() {
                 var source = normalise($(this).data('source'));
                 if (!(source in modmap)) {
-                    if (source) sconosciuti.push(source);
+                    if (source) unknown.push(source);
                     return;
                 }
                 var target = modmap[source];
@@ -352,14 +355,14 @@ $(function() {
                 if (target && target !== SKIP && !modes[target]) target = SKIP;
                 $(this).val(target);
             });
-            if (sconosciuti.length) {
+            if (unknown.length) {
                 $box.find('.import-modmap-note').text(
-                    'Not in the saved mapping, so left unset: ' + sconosciuti.join(', ') + '.');
+                    'Not in the saved mapping, so left unset: ' + unknown.join(', ') + '.');
             }
         }
 
-        var scelto = modes[fallbackDefault] ? fallbackDefault : 'nfm';
-        if (modes[scelto]) $box.find('.import-fallback').val(scelto);
+        var chosen = modes[fallbackDefault] ? fallbackDefault : 'nfm';
+        if (modes[chosen]) $box.find('.import-fallback').val(chosen);
     };
 
     /* ------------------------------------------- remembering the mapping */
@@ -384,16 +387,16 @@ $(function() {
     // everything the page knows, so the next import starts where this one
     // ended instead of from the built-in guesses
     var currentSetup = function() {
-        var campi = {};
+        var fields = {};
         ['name1', 'name2', 'separator', 'frequency', 'unit', 'modulation', 'region', 'locator']
-            .forEach(function(nome) {
-                var $el = $mapping.find('[data-field=' + nome + ']');
-                if ($el.length) campi[nome] = $el.val();
+            .forEach(function(fieldName) {
+                var $el = $mapping.find('[data-field=' + fieldName + ']');
+                if ($el.length) fields[fieldName] = $el.val();
             });
         return {
             url: $page.find('.import-url').val().trim(),
             headerRow: headerRow(),
-            fields: campi,
+            fields: fields,
             extras: extras(),
             regions: $mapping.find('.import-region:checked').map(function() {
                 return this.value;
@@ -410,17 +413,17 @@ $(function() {
     };
 
     $mapping.on('click', '.import-save-defaults', function() {
-        var nuovo = currentSetup();
+        var toSave = currentSetup();
         defaultsStatus('Saving...');
         $.ajax({
             url: 'bookmarkimport/defaults',
             type: 'POST',
-            data: JSON.stringify(nuovo),
+            data: JSON.stringify(toSave),
             contentType: 'application/json',
             dataType: 'json'
         }).done(function(r) {
-            setup = nuovo;
-            modmap = nuovo.modmap;
+            setup = toSave;
+            modmap = toSave.modmap;
             fallbackDefault = r.fallback;
             defaultsStatus('Saved: source, columns, ' + r.regions + ' regions and ' +
                 r.saved + ' modulations. The next import starts from this.', 'ok');
@@ -440,9 +443,9 @@ $(function() {
                 $.each(r.modmap || {}, function(k, v) { modmap[normalise(k)] = v; });
                 fallbackDefault = r.fallback;
                 $page.find('.import-url').val(r.url || '');
-                applicaReach(r);
+                applyReach(r);
                 buildModulations();
-                pagina = 0;
+                page = 0;
                 refresh();
                 defaultsStatus('Back to the built-in setup.', 'ok');
             })
@@ -489,21 +492,21 @@ $(function() {
         if (!reachOn()) return true;
         var r = reach[index];
         if (!r || r.status !== 'ok') return false;
-        var minimo = parseFloat($mapping.find('.import-reach-margin').val());
-        var massimo = parseFloat($mapping.find('.import-reach-distance').val());
-        if (!isNaN(massimo) && r.distance_km > massimo) return false;
+        var minMargin = parseFloat($mapping.find('.import-reach-margin').val());
+        var maxDistance = parseFloat($mapping.find('.import-reach-distance').val());
+        if (!isNaN(maxDistance) && r.distance_km > maxDistance) return false;
         if (r.beyond_horizon && !$mapping.find('.import-reach-horizon').is(':checked')) return false;
-        if (!isNaN(minimo) && r.margin_db < minimo) return false;
+        if (!isNaN(minMargin) && r.margin_db < minMargin) return false;
         return true;
     };
 
     $mapping.on('change', '.import-reach-mode', function() {
-        var volute = reachWanted();
-        $mapping.find('.import-reach-options').toggle(volute);
-        if (volute && reach === null) {
+        var wanted = reachWanted();
+        $mapping.find('.import-reach-options').toggle(wanted);
+        if (wanted && reach === null) {
             reachStatus('Press "Work it out" to measure the paths.');
         }
-        if (!volute) reachStatus('');
+        if (!wanted) reachStatus('');
         refresh();
     });
 
@@ -514,8 +517,8 @@ $(function() {
             return;
         }
         var unit = parseFloat($mapping.find('[data-field=unit]').val()) || 1;
-        var righe = dataRows();
-        var entries = righe.map(function(row) {
+        var tableRows = dataRows();
+        var entries = tableRows.map(function(row) {
             var raw = cell(row, iFreq).replace(/\s/g, '').replace(',', '.');
             var f = parseFloat(raw);
             return {
@@ -534,18 +537,18 @@ $(function() {
             dataType: 'json'
         }).done(function(r) {
             reach = r.results || [];
-            var ok = 0, senzaLoc = 0, senzaDati = 0, oltre = 0;
+            var ok = 0, noLocator = 0, noTerrain = 0, beyond = 0;
             reach.forEach(function(x) {
-                if (!x || x.status === 'no_locator') senzaLoc++;
-                else if (x.status === 'no_terrain') senzaDati++;
-                else { ok++; if (x.beyond_horizon) oltre++; }
+                if (!x || x.status === 'no_locator') noLocator++;
+                else if (x.status === 'no_terrain') noTerrain++;
+                else { ok++; if (x.beyond_horizon) beyond++; }
             });
-            var testo = ok + ' paths measured';
-            if (oltre) testo += ', ' + oltre + ' beyond the horizon';
-            if (senzaLoc) testo += ', ' + senzaLoc + ' without a locator';
-            if (senzaDati) testo += ', ' + senzaDati + ' outside the elevation data';
-            reachStatus(testo + '.', 'ok');
-            pagina = 0;
+            var text = ok + ' paths measured';
+            if (beyond) text += ', ' + beyond + ' beyond the horizon';
+            if (noLocator) text += ', ' + noLocator + ' without a locator';
+            if (noTerrain) text += ', ' + noTerrain + ' outside the elevation data';
+            reachStatus(text + '.', 'ok');
+            page = 0;
             refresh();
         }).fail(function(xhr) {
             var message = 'Could not measure the paths.';
@@ -567,10 +570,10 @@ $(function() {
                     Math.round(r.bytes / 1e6) + ' MB, ' + r.radius_km + ' km around the receiver.', 'ok');
                 return;
             }
-            var mancanti = r.wanted - r.have;
-            if (!confirm('Missing ' + mancanti + ' of ' + r.wanted + ' elevation tiles for ' +
+            var missing = r.wanted - r.have;
+            if (!confirm('Missing ' + missing + ' of ' + r.wanted + ' elevation tiles for ' +
                     r.radius_km + ' km around the receiver.\n\nDownload them now? ' +
-                    'That is roughly ' + Math.round(mancanti * 8.4) + ' MB.')) {
+                    'That is roughly ' + Math.round(missing * 8.4) + ' MB.')) {
                 return;
             }
             $.ajax({
@@ -589,10 +592,10 @@ $(function() {
 
     /* ----------------------------------------------------------- the rows */
 
-    // ignoraReach serves the count under the preview: the same rows built as
+    // ignoreReach serves the count under the preview: the same rows built as
     // if the listenability filter were switched off, so the page can say how
     // many it is leaving out instead of just showing fewer.
-    var build = function(ignoraReach) {
+    var build = function(ignoreReach) {
         var out = [];
         if (!table) return out;
 
@@ -606,7 +609,7 @@ $(function() {
 
         dataRows().forEach(function(row, index) {
             if (filterRegions && !regions[cell(row, iRegion)]) return;
-            if (!ignoraReach && !reachKeeps(index)) return;
+            if (!ignoreReach && !reachKeeps(index)) return;
 
             var raw = cell(row, iFreq).replace(/\s/g, '').replace(',', '.');
             var frequency = parseFloat(raw);
@@ -626,14 +629,14 @@ $(function() {
             var modulation = modulationFor(iMod >= 0 ? cell(row, iMod) : '');
             if (modulation === null) return;
 
-            var riga = {
+            var entry = {
                 name: name.substring(0, 120),
                 frequency: frequency,
                 modulation: modulation
             };
             // carried for the preview only; the import endpoint ignores it
-            if (reachOn() && reach[index]) riga.reach = reach[index];
-            out.push(riga);
+            if (reachOn() && reach[index]) entry.reach = reach[index];
+            out.push(entry);
         });
 
         // One channel, one bookmark. A national repeater list reuses the same
@@ -648,16 +651,16 @@ $(function() {
         //
         // This needs the path budget, which only exists once the paths have
         // been measured, so the option lives with the listenability settings.
-        if (!ignoraReach && reachOn() && $mapping.find('.import-reach-nearest').is(':checked')) {
-            var migliore = {};
+        if (!ignoreReach && reachOn() && $mapping.find('.import-reach-nearest').is(':checked')) {
+            var best = {};
             out.forEach(function(b, i) {
                 var k = b.frequency + '|' + b.modulation;
                 var m = (b.reach && b.reach.margin_db !== undefined) ? b.reach.margin_db : -Infinity;
-                if (!(k in migliore) || m > migliore[k].m) migliore[k] = {m: m, i: i};
+                if (!(k in best) || m > best[k].m) best[k] = {m: m, i: i};
             });
-            var tieni = {};
-            $.each(migliore, function(k, v) { tieni[v.i] = true; });
-            out = out.filter(function(b, i) { return tieni[i]; });
+            var keep = {};
+            $.each(best, function(k, v) { keep[v.i] = true; });
+            out = out.filter(function(b, i) { return keep[i]; });
         }
 
         return out;
@@ -665,22 +668,22 @@ $(function() {
 
     var refresh = function() {
         var rows = build();
-        var mostraReach = reachOn();
-        var pagine = Math.max(1, Math.ceil(rows.length / PREVIEW_ROWS));
-        if (pagina >= pagine) pagina = pagine - 1;
-        if (pagina < 0) pagina = 0;
-        var primo = pagina * PREVIEW_ROWS;
-        var ultimo = Math.min(primo + PREVIEW_ROWS, rows.length);
+        var showReach = reachOn();
+        var pageCount = Math.max(1, Math.ceil(rows.length / PREVIEW_ROWS));
+        if (page >= pageCount) page = pageCount - 1;
+        if (page < 0) page = 0;
+        var first = page * PREVIEW_ROWS;
+        var last = Math.min(first + PREVIEW_ROWS, rows.length);
 
         var html = '<table class="table table-sm"><tr><th>#</th><th>Name</th><th>Frequency</th>' +
             '<th>Modulation</th>' +
-            (mostraReach ? '<th>Distance</th><th>Margin</th>' : '') + '</tr>';
-        rows.slice(primo, ultimo).forEach(function(b, i) {
-            html += '<tr><td class="text-muted">' + (primo + i + 1) + '</td>';
+            (showReach ? '<th>Distance</th><th>Margin</th>' : '') + '</tr>';
+        rows.slice(first, last).forEach(function(b, i) {
+            html += '<tr><td class="text-muted">' + (first + i + 1) + '</td>';
             html += '<td>' + $('<div>').text(b.name).html() + '</td>' +
                 '<td>' + (b.frequency / 1e6).toFixed(5) + ' MHz</td>' +
                 '<td>' + $('<div>').text(b.modulation).html() + '</td>';
-            if (mostraReach) {
+            if (showReach) {
                 var r = b.reach || {};
                 html += '<td>' + (r.distance_km !== undefined ? r.distance_km + ' km' : '-') + '</td>' +
                     '<td>' + (r.margin_db !== undefined ? r.margin_db + ' dB' : '-') +
@@ -697,15 +700,15 @@ $(function() {
         if (rows.length > PREVIEW_ROWS) {
             html += '<div class="import-pager">' +
                 '<button type="button" class="btn btn-sm btn-secondary import-page" data-to="first"' +
-                    (pagina === 0 ? ' disabled' : '') + '>&laquo;</button> ' +
+                    (page === 0 ? ' disabled' : '') + '>&laquo;</button> ' +
                 '<button type="button" class="btn btn-sm btn-secondary import-page" data-to="prev"' +
-                    (pagina === 0 ? ' disabled' : '') + '>&lsaquo;</button> ' +
-                '<span class="mx-2">' + (primo + 1) + '\u2013' + ultimo + ' of ' + rows.length +
-                '  (page ' + (pagina + 1) + ' of ' + pagine + ')</span> ' +
+                    (page === 0 ? ' disabled' : '') + '>&lsaquo;</button> ' +
+                '<span class="mx-2">' + (first + 1) + '\u2013' + last + ' of ' + rows.length +
+                '  (page ' + (page + 1) + ' of ' + pageCount + ')</span> ' +
                 '<button type="button" class="btn btn-sm btn-secondary import-page" data-to="next"' +
-                    (pagina >= pagine - 1 ? ' disabled' : '') + '>&rsaquo;</button> ' +
+                    (page >= pageCount - 1 ? ' disabled' : '') + '>&rsaquo;</button> ' +
                 '<button type="button" class="btn btn-sm btn-secondary import-page" data-to="last"' +
-                    (pagina >= pagine - 1 ? ' disabled' : '') + '>&raquo;</button>' +
+                    (page >= pageCount - 1 ? ' disabled' : '') + '>&raquo;</button>' +
                 '</div>';
         }
 
@@ -717,23 +720,23 @@ $(function() {
         // bookmark and only one is stored. In a national repeater list that is
         // easy to cause by accident: dozens of stations share a channel, so if
         // the name does not tell them apart they silently collapse into one.
-        var visti = {}, collisioni = 0;
+        var seen = {}, duplicates = 0;
         rows.forEach(function(b) {
             var k = b.name.trim().toLowerCase() + '|' + b.frequency + '|' + b.modulation;
-            if (visti[k]) collisioni++; else visti[k] = true;
+            if (seen[k]) duplicates++; else seen[k] = true;
         });
         $mapping.find('.import-collisions').text(
-            collisioni
-                ? collisioni + ' of these have the same name, frequency and modulation as another ' +
+            duplicates
+                ? duplicates + ' of these have the same name, frequency and modulation as another ' +
                   'and only one of each will be stored. Add a column that tells them apart - the ' +
                   'locality, under step 3 - to keep them all.'
                 : '');
 
-        if (mostraReach) {
-            var senza = build(true).length;
+        if (showReach) {
+            var unfiltered = build(true).length;
             $mapping.find('.import-reach-removed').text(
-                senza > rows.length
-                    ? (senza - rows.length) + ' of ' + senza + ' left out as unlikely to be heard'
+                unfiltered > rows.length
+                    ? (unfiltered - rows.length) + ' of ' + unfiltered + ' left out as unlikely to be heard'
                     : '');
         } else {
             $mapping.find('.import-reach-removed').text('');
@@ -745,7 +748,7 @@ $(function() {
         if ($(this).hasClass('import-save-defaults')) return;
         // the rows themselves have changed, so the page you were on no longer
         // refers to anything
-        pagina = 0;
+        page = 0;
         var field = $(this).data('field');
         // changing which column holds the region or the modulation changes
         // the lists built from that column's values
@@ -756,18 +759,18 @@ $(function() {
     });
 
     $mapping.on('click', '.import-page', function() {
-        var dove = $(this).data('to');
-        var pagine = Math.max(1, Math.ceil(build().length / PREVIEW_ROWS));
-        if (dove === 'first') pagina = 0;
-        else if (dove === 'prev') pagina -= 1;
-        else if (dove === 'next') pagina += 1;
-        else if (dove === 'last') pagina = pagine - 1;
+        var to = $(this).data('to');
+        var pageCount = Math.max(1, Math.ceil(build().length / PREVIEW_ROWS));
+        if (to === 'first') page = 0;
+        else if (to === 'prev') page -= 1;
+        else if (to === 'next') page += 1;
+        else if (to === 'last') page = pageCount - 1;
         refresh();
     });
 
     $mapping.on('click', '.import-regions-all, .import-regions-none', function() {
         $mapping.find('.import-region').prop('checked', $(this).hasClass('import-regions-all'));
-        pagina = 0;
+        page = 0;
         refresh();
     });
 
@@ -791,13 +794,13 @@ $(function() {
         // next to the button, not at the top of the page: the status line up
         // there is off screen by the time anyone reaches Import, so a finished
         // import looked exactly like nothing happening
-        var esito = function(testo, tipo) {
-            setStatus(testo, tipo);
+        var report = function(text, kind) {
+            setStatus(text, kind);
             $mapping.find('.import-result')
-                .removeClass('text-danger text-success').text(testo)
-                .addClass(tipo === 'error' ? 'text-danger' : 'text-success');
+                .removeClass('text-danger text-success').text(text)
+                .addClass(kind === 'error' ? 'text-danger' : 'text-success');
         };
-        esito('Importing ' + rows.length + ' bookmarks...');
+        report('Importing ' + rows.length + ' bookmarks...');
         $.ajax({
             url: 'bookmarkimport/apply',
             type: 'POST',
@@ -809,15 +812,15 @@ $(function() {
             contentType: 'application/json',
             dataType: 'json'
         }).done(function(r) {
-            var testo = 'Imported: ' + r.added + ' added';
-            if (r.replaced) testo += ', ' + r.replaced + ' of your own replaced on the same frequency';
-            if (r.updated) testo += ', ' + r.updated + ' already there';
-            if (r.skipped) testo += ', ' + r.skipped + ' skipped';
-            esito(testo + '. ' + r.total + ' bookmarks in storage.', 'ok');
+            var text = 'Imported: ' + r.added + ' added';
+            if (r.replaced) text += ', ' + r.replaced + ' of your own replaced on the same frequency';
+            if (r.updated) text += ', ' + r.updated + ' already there';
+            if (r.skipped) text += ', ' + r.skipped + ' skipped';
+            report(text + '. ' + r.total + ' bookmarks in storage.', 'ok');
         }).fail(function(xhr) {
             var message = 'The import failed.';
             try { message = JSON.parse(xhr.responseText).error || message; } catch (e) {}
-            esito(message, 'error');
+            report(message, 'error');
         }).always(function() {
             $button.prop('disabled', false);
         });

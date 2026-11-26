@@ -806,8 +806,8 @@ function on_ws_recv(evt) {
                         if ('samp_rate' in config)
                             bandwidth = config['samp_rate'];
                         if ('direct_sampling' in config) {
-                            // 2 e il ramo Q, 1 quello I: in entrambi i casi la
-                            // radio sta usando l'ingresso dell'ADC
+                            // 2 is the Q branch, 1 the I branch: either way
+                            // the radio is on the ADC input
                             $('#openwebrx-ds').toggle(!!config['direct_sampling']);
                         }
                         if ('center_freq' in config) {
@@ -1355,18 +1355,18 @@ function init_two_tone_panel_class() {
 
     TwoToneMessagePanel.prototype.pushMessage = function(msg) {
         var $b = $(this.el).find('tbody');
-        var ora = new Date().toISOString().slice(11, 19);
+        var time = new Date().toISOString().slice(11, 19);
 
         // the measured frequencies are the result; the plan is only a label,
         // so a page that matches no known plan is still worth showing
-        var toni = (msg.tone_a || 0).toFixed(1) + ' / ' + (msg.tone_b || 0).toFixed(1) + ' Hz';
-        var piano = msg.plan ? msg.plan + ' ' + (msg.tone_numbers || '') : '-';
-        var durate = 'held ' + (msg.duration_a || 0) + ' ms then ' + (msg.duration_b || 0) + ' ms';
+        var tones = (msg.tone_a || 0).toFixed(1) + ' / ' + (msg.tone_b || 0).toFixed(1) + ' Hz';
+        var plan = msg.plan ? msg.plan + ' ' + (msg.tone_numbers || '') : '-';
+        var durations = 'held ' + (msg.duration_a || 0) + ' ms then ' + (msg.duration_b || 0) + ' ms';
 
         var $tr = $('<tr></tr>');
-        $('<td class="time"></td>').text(ora).appendTo($tr);
-        $('<td class="tones"></td>').text(toni).attr('title', durate).appendTo($tr);
-        $('<td class="plan"></td>').text(piano).appendTo($tr);
+        $('<td class="time"></td>').text(time).appendTo($tr);
+        $('<td class="tones"></td>').text(tones).attr('title', durations).appendTo($tr);
+        $('<td class="plan"></td>').text(plan).appendTo($tr);
 
         $b.append($tr);
         var $scroller = $(this.el).find('.two-tone-rows');
@@ -1409,13 +1409,13 @@ function init_five_tone_panel_class() {
         return this.standards.slice();
     };
 
-    /* Il filtro per standard, in un posto solo: lo usano il clic sui pulsanti,
-     * le righe nuove e il conteggio di quelle nascoste, che prima lo
-     * ripetevano ognuno a modo suo. */
+    /* The per-standard filter, in one place: the button clicks, the new rows
+     * and the count of the hidden ones all go through it, where each of them
+     * used to repeat it in its own way. */
     FiveToneMessagePanel.prototype.matches = function(standard, sequence) {
-        var attivi = this.enabledStandards();
+        var enabled = this.enabledStandards();
         var std = String(standard || '').split('/');
-        return std.some(function(x) { return attivi.indexOf(x) > -1; });
+        return std.some(function(x) { return enabled.indexOf(x) > -1; });
     };
 
     FiveToneMessagePanel.prototype.applyFilter = function() {
@@ -1434,20 +1434,20 @@ function init_five_tone_panel_class() {
 
     FiveToneMessagePanel.prototype.render = function() {
         var me = this;
-        var attivi = this.enabledStandards();
+        var enabled = this.enabledStandards();
 
         var $bar = $('<div class="five-tone-filter"></div>');
-        this.standards.forEach(function(nome) {
+        this.standards.forEach(function(standard) {
             $('<button type="button"></button>')
-                .text(nome)
-                .toggleClass('active', attivi.indexOf(nome) > -1)
+                .text(standard)
+                .toggleClass('active', enabled.indexOf(standard) > -1)
                 .on('click', function() {
                     var $b = $(this);
                     $b.toggleClass('active');
-                    var scelti = $bar.find('button.active').map(function() {
+                    var chosen = $bar.find('button.active').map(function() {
                         return $(this).text();
                     }).get();
-                    me.setEnabledStandards(scelti);
+                    me.setEnabledStandards(chosen);
                     // hide rows that no longer match, without losing them
                     me.applyFilter();
                 })
@@ -1478,41 +1478,41 @@ function init_five_tone_panel_class() {
 
     FiveToneMessagePanel.prototype.updateHiddenNote = function() {
         var me = this;
-        var nascoste = 0;
+        var hidden = 0;
         $(this.el).find('tbody tr').each(function() {
-            if (!me.matches($(this).data('standards'), $(this).find('.sequence').text())) nascoste++;
+            if (!me.matches($(this).data('standards'), $(this).find('.sequence').text())) hidden++;
         });
-        var $nota = $(this.el).find('.five-tone-hidden');
-        if (!nascoste) {
-            $nota.text('');
+        var $note = $(this.el).find('.five-tone-hidden');
+        if (!hidden) {
+            $note.text('');
             return;
         }
         // kept to one line: the panel grows upward from the bottom of the
         // screen, so every extra line of this note moves the whole panel, and
         // the long version wrapped to two.
-        $nota.text(nascoste + ' hidden by the filter above.');
+        $note.text(hidden + ' hidden by the filter above.');
     };
 
     FiveToneMessagePanel.prototype.pushMessage = function(msg) {
         var $b = $(this.el).find('tbody');
-        var ora = new Date().toISOString().slice(11, 19);
+        var time = new Date().toISOString().slice(11, 19);
         var standard = msg.standard || '';
-        var visibile = this.matches(standard, msg.sequence || '');
+        var visible = this.matches(standard, msg.sequence || '');
         // the full names do not fit the column when a call matches several
         // standards, so the cell shows short codes and the title the full list
-        var sigle = {CCIR: 'CC', ZVEI1: 'Z1', ZVEI2: 'Z2', DZVEI: 'DZ', EIA: 'EI', CCITT: 'CT'};
-        var breve = standard.split('/').map(function(x) { return sigle[x] || x; }).join(' ');
+        var codes = {CCIR: 'CC', ZVEI1: 'Z1', ZVEI2: 'Z2', DZVEI: 'DZ', EIA: 'EI', CCITT: 'CT'};
+        var brief = standard.split('/').map(function(x) { return codes[x] || x; }).join(' ');
 
         var $tr = $(
             '<tr>' +
-                '<td class="time">' + ora + '</td>' +
+                '<td class="time">' + time + '</td>' +
                 '<td class="sequence">' + this.htmlEscape(msg.sequence || '') + '</td>' +
                 '<td class="standard" title="' + this.htmlEscape(standard) + '">' +
-                    this.htmlEscape(breve) + '</td>' +
+                    this.htmlEscape(brief) + '</td>' +
             '</tr>'
         );
         $tr.attr('data-standards', standard);
-        if (!visibile) $tr.hide();
+        if (!visible) $tr.hide();
         $b.append($tr);
         this.updateHiddenNote();
         var $scroller = $(this.el).find('.five-tone-rows');
@@ -1906,10 +1906,10 @@ function edit_memory(name) {
     memory_editing = name;
     $('#memory-name').val(m.name);
     $('#memory-freq').val(format_memory_freq(m.frequency));
-    var cinque = (m.modulation === '5tone');
-    $('#memory-mod').val(cinque ? 'nfm' : (m.modulation || 'nfm'));
+    var fiveTone = (m.modulation === '5tone');
+    $('#memory-mod').val(fiveTone ? 'nfm' : (m.modulation || 'nfm'));
     update_5tone_option();
-    $('#memory-5tone').prop('checked', cinque);
+    $('#memory-5tone').prop('checked', fiveTone);
     $('#memory-edit-name').text(name);
     $('#memory-edit-banner').show();
     $('#memory-save-button').text('Update');
@@ -1930,9 +1930,9 @@ function update_5tone_option() {
     // stored modulation becomes "5tone", which OpenWebRX resolves to nfm plus
     // the secondary decoder
     var mod = $('#memory-mod').val();
-    var adatto = (mod === 'nfm' || mod === 'fm');
-    $('#memory-5tone-row').toggle(adatto);
-    if (!adatto) $('#memory-5tone').prop('checked', false);
+    var suitable = (mod === 'nfm' || mod === 'fm');
+    $('#memory-5tone-row').toggle(suitable);
+    if (!suitable) $('#memory-5tone').prop('checked', false);
 }
 
 function save_memory_from_panel() {
@@ -2153,10 +2153,10 @@ function render_memories() {
     list.html('');
 
     if (entries.length === 0) {
-        var vuoto = bandplan
+        var nothing = bandplan
             ? (filter ? 'No matching entry' : 'No bandplan entries')
             : (filter ? 'No matching bookmark' : 'No bookmarks stored');
-        list.html('<div style="font-size: 11px; color: #888;">' + vuoto + '</div>');
+        list.html('<div style="font-size: 11px; color: #888;">' + nothing + '</div>');
         return;
     }
 
@@ -2257,12 +2257,12 @@ function step_center_freq(delta_hz) {
     var current = parseFloat($('#openwebrx-frequency-input').val());
     if (isNaN(current)) current = center_freq / unit;
 
-    var nuova_hz = Math.round(current * unit) + delta_hz;
-    if (nuova_hz < 500000) {
+    var new_hz = Math.round(current * unit) + delta_hz;
+    if (new_hz < 500000) {
         divlog('Frequency out of range', true);
         return;
     }
-    $('#openwebrx-frequency-input').val(nuova_hz / unit);
+    $('#openwebrx-frequency-input').val(new_hz / unit);
     set_frequency();
 }
 

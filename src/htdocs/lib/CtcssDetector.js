@@ -104,20 +104,20 @@ CtcssDetector.prototype.goertzel = function(frequency) {
     return Math.sqrt(s1 * s1 + s2 * s2 - k * s1 * s2);
 };
 
-/* La sintonia a cui il tono e stato sentito. Un tono vale per la frequenza su
- * cui lo hai sentito: appena ti sposti non vuol piu dire niente, mentre
- * finche resti li vale ancora anche quando la portante cade. */
+/* The frequency the tone was heard on. A tone belongs to the frequency it was
+ * heard on: move away and it means nothing any more, while staying put it
+ * still holds even after the carrier drops. */
 CtcssDetector.prototype.setTunedProbe = function(probe) {
     this.tunedProbe = probe;
 };
 
 CtcssDetector.prototype.test = function() {
-    // cambiata sintonia: quello che sapevamo non vale piu
+    // retuned: what we knew no longer applies
     if (this.tunedProbe) {
-        var sintonia = this.tunedProbe();
-        if (sintonia !== null && sintonia !== undefined) {
-            if (this.tunedAt !== null && this.tunedAt !== undefined && sintonia !== this.tunedAt) {
-                this.tunedAt = sintonia;
+        var tuned = this.tunedProbe();
+        if (tuned !== null && tuned !== undefined) {
+            if (this.tunedAt !== null && this.tunedAt !== undefined && tuned !== this.tunedAt) {
+                this.tunedAt = tuned;
                 this.pending = null;
                 this.pendingCount = 0;
                 if (this.lastTone !== null) {
@@ -126,7 +126,7 @@ CtcssDetector.prototype.test = function() {
                 }
                 return;
             }
-            this.tunedAt = sintonia;
+            this.tunedAt = tuned;
         }
     }
 
@@ -153,11 +153,11 @@ CtcssDetector.prototype.test = function() {
         this.pendingCount = ok ? 1 : 0;
     }
 
-    /* Una volta letto, il tono RESTA. Il CTCSS esiste solo mentre c'e
-     * portante, ma e una proprieta del canale, non del momento: cancellarlo a
-     * fine trasmissione vorrebbe dire mostrarlo per due secondi e poi togliere
-     * proprio l'informazione che serviva. Se ne sente uno diverso, viene
-     * sostituito; se cambi sintonia, viene dimenticato. Altrimenti resta. */
+    /* Once read, the tone STAYS. CTCSS only exists while there is a carrier,
+     * but it is a property of the channel rather than of the moment: clearing
+     * it at the end of a transmission would mean showing it for two seconds
+     * and then removing the very information that was wanted. A different tone
+     * replaces it; retuning forgets it; otherwise it stays. */
     if (this.pendingCount >= 2 && this.pending !== this.lastTone) {
         this.lastTone = this.pending;
         if (this.onTone) {
@@ -167,7 +167,7 @@ CtcssDetector.prototype.test = function() {
 };
 
 CtcssDetector.prototype.clear = function() {
-    var aveva = this.lastTone;
+    var had = this.lastTone;
     this.reset();
-    if (aveva && this.onTone) this.onTone(null, 0);
+    if (had && this.onTone) this.onTone(null, 0);
 };
