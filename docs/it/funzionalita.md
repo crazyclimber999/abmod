@@ -294,6 +294,14 @@ prudenza, sono risoluzione: le coppie più vicine della tabella distano circa
 finestre consecutive d'accordo, perché una trasmissione appena aperta spesso dà
 una finestra buona e una sporca.
 
+Gira solo sulla FM a banda stretta. Il CTCSS è una convenzione della FM
+analogica, quindi su AM o SSB non c'è nulla da cercare, e i modi digitali -
+DMR, D-Star, YSF, NXDN, M17 - portano il controllo d'accesso nel protocollo,
+senza spazio nello standard per un tono sotto la banda vocale. Cercarlo lì
+potrebbe solo produrre una lettura falsa e una riga di log che afferma una
+cosa impossibile. Passando a uno di quei modi il valore viene cancellato
+invece di restare scritto.
+
 ## 13. Campionamento diretto automatico sotto il limite del tuner
 
 Un R820T non scende sotto i 24 MHz circa. Più in basso l'unica via d'ingresso è

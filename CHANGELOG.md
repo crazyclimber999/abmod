@@ -8,6 +8,20 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
+## v1.0.16 — 2026-11-26
+
+### Fixed
+
+- **The sub-audible tone detector ran on modes that cannot carry a tone.** On
+  a DMR signal it would occasionally report a CTCSS tone and write one into
+  the log, which is not a false reading so much as a meaningless one: CTCSS is
+  an analogue FM arrangement, and DMR, D-Star, YSF, NXDN and M17 carry their
+  access control in the protocol with no room in the standard for a tone below
+  the voice band. AM and SSB have none either. The detector now runs on
+  narrowband FM and nothing else - a positive test rather than a list of
+  exclusions - and switching to another mode clears the display instead of
+  leaving the last tone on screen.
+
 ## v1.0.15 — 2026-11-26
 
 ### Fixed

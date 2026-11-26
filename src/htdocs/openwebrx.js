@@ -745,7 +745,36 @@ function ctcssInit() {
     }
 }
 
+/* Whether the mode being listened to can carry a sub-audible tone at all.
+ *
+ * CTCSS is an analogue FM arrangement: a tone below the voice band, used by
+ * repeaters to decide what to repeat. The digital modes have no such thing -
+ * DMR, D-Star, YSF, NXDN and M17 carry their access control in the protocol,
+ * and there is simply no room in the standard for a sub-audible tone. Looking
+ * for one there can only find a false positive, and writing "sub-audible tone"
+ * into the log for a DMR signal states something that cannot be true.
+ *
+ * AM and SSB have no CTCSS either, so the test is positive rather than a list
+ * of exclusions: narrowband FM, and nothing else. */
+function ctcssModulationCarriesTone() {
+    try {
+        var panel = $('#openwebrx-panel-receiver').demodulatorPanel();
+        var demod = (panel && panel.getDemodulator) ? panel.getDemodulator() : null;
+        if (!demod || !demod.get_modulation) return false;
+        return demod.get_modulation() === 'nfm';
+    } catch (e) {
+        return false;
+    }
+}
+
 function ctcssFeed(data) {
+    if (!ctcssModulationCarriesTone()) {
+        // clear() forgets the last tone and hides the display, so switching to
+        // a digital mode does not leave a tone on screen that is no longer
+        // being looked for and could not exist on that mode anyway.
+        if (ctcssDetector) ctcssDetector.clear();
+        return;
+    }
     ctcssInit();
     if (!ctcssDetector) return;
     try {

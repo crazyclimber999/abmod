@@ -1,3 +1,13 @@
+abmod (1.0.16) bullseye; urgency=low
+
+  * Stop looking for a sub-audible tone on modes that cannot carry one. CTCSS
+    is an analogue FM arrangement; DMR, D-Star, YSF, NXDN and M17 have no room
+    for it in the standard, and neither do AM or SSB. The detector now runs on
+    narrowband FM only, and switching away clears the display instead of
+    leaving a tone on screen.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Thu, 26 Nov 2026 22:15:00 +0000
+
 abmod (1.0.15) bullseye; urgency=low
 
   * Keep the gain asserted on a dongle served over the network. openwebrx

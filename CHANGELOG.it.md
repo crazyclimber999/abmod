@@ -9,6 +9,20 @@ ABMod è costruito e provato. Le ragioni delle scelte sono in
 Le date sono il giorno in cui la modifica è stata finita e messa su un
 ricevitore vero.
 
+## v1.0.16 — 2026-11-26
+
+### Corretto
+
+- **Il rilevatore di tono sub-audio girava anche sui modi che non possono
+  portarne uno.** Su un segnale DMR arrivava a segnalare un tono CTCSS e a
+  scriverlo nel log, che non è tanto una lettura falsa quanto priva di senso:
+  il CTCSS è una convenzione della FM analogica, e DMR, D-Star, YSF, NXDN e
+  M17 portano il controllo d'accesso nel protocollo, senza spazio nello
+  standard per un tono sotto la banda vocale. Nemmeno AM e SSB ne hanno. Ora
+  il rilevatore gira solo sulla FM a banda stretta - una verifica positiva
+  invece di un elenco di esclusioni - e passando a un altro modo il valore
+  viene cancellato invece di restare scritto sullo schermo.
+
 ## v1.0.15 — 2026-11-26
 
 ### Corretto

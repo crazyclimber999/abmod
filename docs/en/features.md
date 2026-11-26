@@ -279,6 +279,14 @@ together. A reading needs two consecutive windows to agree, because a
 transmission that has only just opened often gives one good window and one
 ragged one.
 
+It runs on narrowband FM and nothing else. CTCSS is an analogue FM
+arrangement, so there is nothing to look for on AM or SSB, and the digital
+modes - DMR, D-Star, YSF, NXDN, M17 - carry their access control in the
+protocol with no room in the standard for a tone below the voice band.
+Looking there could only produce a false reading and a line in the log
+asserting something that cannot be true. Switching to one of those modes
+clears the display rather than leaving the last tone on screen.
+
 ## 13. Automatic direct sampling below the tuner's floor
 
 An R820T cannot tune below roughly 24 MHz. Below that the only way in is the
