@@ -28,6 +28,11 @@ What this costs: the gateway stops the moment anyone connects, including a
 passing visitor, and it is their connection that decides it rather than the
 operator's. On a busy public receiver that can mean the gateway rarely runs.
 That is the deal, and it is off by default.
+
+It also does nothing at all unless the igate itself is switched on. The
+parking has no purpose of its own: it exists to feed the igate, so with the
+igate off the clock is never even started and the receiver stays where the
+operator left it.
 """
 
 import logging
@@ -66,6 +71,17 @@ def _setting(key, fallback=None):
 
 def _enabled():
     return bool(_setting("aprs_idle_enabled", False))
+
+
+def _igate_enabled():
+    """
+    Whether the igate is switched on.
+
+    The parking exists to feed the igate and has no other purpose. With the
+    igate off, moving the receiver away from its saved default buys nothing at
+    all, so the clock is not even started: see `_arm`.
+    """
+    return bool(_setting("aprs_igate_enabled", False))
 
 
 def _timeout_seconds():
@@ -151,10 +167,17 @@ def _tune(sdr, freq):
 
 def _cancel_timer():
     global _timer
+    cancelled = False
     with _lock:
         if _timer is not None:
             _timer.cancel()
             _timer = None
+            cancelled = True
+    if cancelled:
+        # Said out loud because the silence used to be unreadable: a receiver
+        # that never parks because visitors keep arriving looks exactly like a
+        # receiver that never parks because something is broken.
+        logger.debug("a listener arrived; the idle clock is cancelled")
 
 
 def client_arrived():
@@ -211,12 +234,22 @@ def client_gone():
 
 
 def _arm():
-    """Start the clock, unless somebody is listening."""
+    """Start the clock, unless somebody is listening or the igate is off."""
     global _timer
+    if not _igate_enabled():
+        logger.debug(
+            "not arming the idle clock: the igate is off, so there is nothing "
+            "to park for"
+        )
+        return
     try:
         from owrx.client import ClientRegistry
 
-        if ClientRegistry.getSharedInstance().clientCount() > 0:
+        listeners = ClientRegistry.getSharedInstance().clientCount()
+        if listeners > 0:
+            logger.debug(
+                "not arming the idle clock: %d listener(s) still connected", listeners
+            )
             return
     except Exception:
         logger.exception("could not count the clients; not parking")
@@ -242,6 +275,13 @@ def _park():
     if not _enabled():
         return
 
+    # Checked again here, not only when the clock started: the igate may have
+    # been switched off while the clock ran, and then there is nothing to park
+    # for any more.
+    if not _igate_enabled():
+        logger.info("not parking: the igate has been switched off")
+        return
+
     freq = _idle_frequency()
     if freq is None:
         logger.warning("no idle frequency configured; not parking")
@@ -256,6 +296,7 @@ def _park():
         from owrx.sdr import SdrService
 
         if ClientRegistry.getSharedInstance().clientCount() > 0:
+            logger.debug("a listener arrived while the clock ran; not parking")
             return
         sdr = SdrService.getFirstSource()
     except Exception:

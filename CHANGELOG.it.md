@@ -9,6 +9,23 @@ ABMod è costruito e provato. Le ragioni delle scelte sono in
 Le date sono il giorno in cui la modifica è stata finita e messa su un
 ricevitore vero.
 
+## v1.0.14 — 2026-11-26
+
+### Cambiato
+
+- **Il parcheggio APRS non fa niente se l'igate è spento.** Alimentare *Send
+  received APRS data to the APRS-IS network* è l'unico scopo del parcheggio,
+  quindi con l'igate spento non c'è per cosa parcheggiare e l'orologio non
+  parte più nemmeno. Il ricevitore resta sulla frequenza centrale salvata.
+
+### Aggiunto
+
+- **Ogni rifiuto di parcheggiare dice perché.** Tre vie d'uscita erano mute -
+  l'igate spento, un ascoltatore ancora collegato, un ascoltatore arrivato
+  mentre l'orologio correva - e un ricevitore che non parcheggiava per una di
+  quelle ragioni si leggeva esattamente come un ricevitore guasto. Ora ognuna
+  dice quale delle tre è.
+
 ## v1.0.13 — 2026-11-26
 
 ### Corretto

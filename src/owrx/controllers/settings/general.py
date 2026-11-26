@@ -295,7 +295,9 @@ class GeneralSettingsController(SettingsFormController):
                     "Park on the APRS frequency when nobody is listening",
                     infotext="With nobody connected the receiver moves itself to the frequency "
                     + "below, so the gateway keeps working; the moment someone connects it goes "
-                    + "back to the centre frequency saved for the profile. It needs <em>Keep "
+                    + "back to the centre frequency saved for the profile. It does nothing "
+                    + "unless <em>Send received APRS data to the APRS-IS network</em> above is "
+                    + "on, since feeding that is the only reason to park. It also needs <em>Keep "
                     + "device running at all times</em> on the device, otherwise the radio is "
                     + "simply off with nobody connected. Note that <strong>any</strong> visitor "
                     + "connecting stops the gateway, not just you.",

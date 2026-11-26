@@ -363,9 +363,18 @@ Three things this gets right by construction:
   wherever the receiver happens to be pointing. `settings.json` is written only
   by Save Defaults, which is the intent worth honouring - so an operator who
   saves a new default while the receiver is parked gets that new one back.
+- **It does nothing unless the igate is on.** The parking has no purpose of
+  its own: it exists to feed *Send received APRS data to the APRS-IS network*.
+  With that off, moving the receiver away from the frequency its operator
+  saved buys nothing, so the clock is never even started.
 - **It refuses to park a radio that is switched off.** Without *Keep device
   running at all times* the source stops as soon as the last listener leaves,
   so moving its frequency would achieve nothing. It says so in the log instead.
+- **Every refusal says why, in the log.** A receiver that never parks because
+  visitors keep arriving reads exactly like one that never parks because
+  something is broken, so each way out says which it is: the igate is off, a
+  listener is still connected, a listener arrived while the clock ran, the
+  radio is already on the APRS frequency.
 - **The clock is armed at start-up too**, not only when a listener leaves. A
   receiver that has just been restarted and that nobody has visited since is
   exactly the one that should be gatewaying, and waiting for a visitor to

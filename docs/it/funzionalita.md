@@ -382,10 +382,20 @@ Tre cose che vengono giuste per costruzione:
   Defaults, che è l'intenzione che vale la pena rispettare: chi salva un
   default nuovo mentre il ricevitore è parcheggiato si ritrova quello al
   ritorno.
+- **Non fa niente se l'igate è spento.** Il parcheggio non ha uno scopo
+  proprio: esiste per alimentare *Send received APRS data to the APRS-IS
+  network*. Con quello spento, spostare il ricevitore dalla frequenza che chi
+  gestisce la stazione ha salvato non dà niente in cambio, quindi l'orologio
+  non parte nemmeno.
 - **Si rifiuta di parcheggiare una radio spenta.** Senza *Keep device running
   at all times* la sorgente si ferma appena l'ultimo ascoltatore se ne va,
   quindi spostarle la frequenza non otterrebbe niente. Lo scrive nel log
   invece di farlo.
+- **Ogni rifiuto dice perché, nel log.** Un ricevitore che non parcheggia mai
+  perché arrivano visitatori si legge esattamente come uno che non parcheggia
+  perché qualcosa è rotto, quindi ogni via d'uscita dice quale delle due è:
+  l'igate è spento, c'è ancora un ascoltatore collegato, un ascoltatore è
+  arrivato mentre l'orologio correva, la radio è già sulla frequenza APRS.
 - **L'orologio parte anche all'avvio**, non solo quando un ascoltatore se ne
   va. Un ricevitore appena riavviato che nessuno ha ancora visitato è proprio
   quello che dovrebbe gateare, e aspettare che arrivi e se ne vada un

@@ -8,6 +8,22 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
+## v1.0.14 — 2026-11-26
+
+### Changed
+
+- **The APRS parking does nothing unless the igate is on.** Feeding *Send
+  received APRS data to the APRS-IS network* is the parking's only purpose, so
+  with the igate off there is nothing to park for and the clock is no longer
+  even started. The receiver stays on the centre frequency its operator saved.
+
+### Added
+
+- **Every refusal to park now says why.** Three ways out used to be silent -
+  the igate being off, a listener still connected, a listener arriving while
+  the clock ran - and a receiver that never parks for one of those reasons
+  read exactly like a receiver with a fault. Each one now says which it is.
+
 ## v1.0.13 — 2026-11-26
 
 ### Fixed

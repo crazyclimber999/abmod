@@ -1,3 +1,14 @@
+abmod (1.0.14) bullseye; urgency=low
+
+  * The APRS parking now does nothing unless the igate itself is switched on.
+    Feeding the igate is its only purpose, so with the igate off the clock is
+    never started and the receiver stays on its saved frequency.
+  * Say in the log why the parking did not happen: the igate is off, a
+    listener is still connected, or a listener arrived while the clock ran.
+    Those three used to be silent and read like a fault.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Thu, 26 Nov 2026 17:15:00 +0000
+
 abmod (1.0.13) bullseye; urgency=low
 
   * Fix the APRS parking never happening on a receiver whose saved default
