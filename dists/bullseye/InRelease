@@ -8,17 +8,17 @@ Codename: bullseye
 Architectures: all
 Components: main
 Description: ABMod packages for OpenWebRX
-Date: Thu, 26 Nov 2026 23:13:27 +0000
+Date: Thu, 26 Nov 2026 23:24:55 +0000
 MD5Sum:
- 5285eaea42d4f6e772485fdb3868c879             1430 main/binary-all/Packages
- 6c04ec61a3a1085f0d405556220f72f8              874 main/binary-all/Packages.gz
+ 7c93bbc4be64a331105dcde491224c08             1430 main/binary-all/Packages
+ fff384bb9444b63b83b2c8412b637f8b              876 main/binary-all/Packages.gz
 SHA256:
- 2ec9062a7d93ad8a624295b9f946e8a7a2c6690261b416902d951abf74cb08e8             1430 main/binary-all/Packages
- 0a66d64323a5bc8e58d5eb3f28c20a0f605a083f33755dc397e6e4d2aabe9007              874 main/binary-all/Packages.gz
+ 15d012732cd99b0c9f2b83457de204f35ab1920fc0e33ce4ad46aafb9c09afce             1430 main/binary-all/Packages
+ 474667b51325246b8283c08b0c856af9c9438ea792e61550e952b07f99a94c24              876 main/binary-all/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYIAB0WIQQyqdl94rLbdFrE8eRy7eKEZQ0WbAUCawi9GAAKCRBy7eKEZQ0W
-bBBsAQDPWE4d61gTOT3euV1VhyLQlKbfR+SuX2Je7pBn7WWmOQD+K/KWvbpyJSb8
-VUJwFAqCF6G1K59fXum5qpS3wpUz8wI=
-=n1fc
+iHUEARYIAB0WIQQyqdl94rLbdFrE8eRy7eKEZQ0WbAUCawi/xwAKCRBy7eKEZQ0W
+bNbLAP4ttwGCFXoywEI2RI7SXbH3DS2omJ3D0TVUjn3u1l1p4wEAzF/MSBQXku5Z
+WAai/04rNDUxFf81zEmL5C2cQtVcKQw=
+=WTM1
 -----END PGP SIGNATURE-----
