@@ -254,7 +254,87 @@ anything. The deletion goes as one request rather than one per row.
 If the list changed since the page was loaded, it says so instead of reporting
 a successful deletion of nothing.
 
-## 12. Smaller things
+## 12. CTCSS sub-audible tone readout
+
+The tone is shown under the frequency readout and written to the log, and it
+**stays** once read: CTCSS is a property of the channel, not of the moment, so
+clearing it when the carrier drops would show it for two seconds and then
+remove exactly the information that was wanted. It is replaced when a
+different tone is heard, and forgotten when you retune.
+
+It is decoded **in the browser, from the same samples the speaker gets**. That
+is not a shortcut — it is where the tone actually survives. OpenWebRX's NFM
+chain ends in a de-emphasis, which is a low-pass, so it lifts the sub-audible
+end rather than removing it, and there is no high-pass anywhere in that chain
+to strip it. A radio filters CTCSS out so you do not hear it; this one does
+not, which is why there is something left to measure.
+
+Measured on a live transmission: the tone stood **34.7 times** the surrounding
+noise floor, **0.20 Hz** from the nominal 107.2 Hz. 39 standard tones are
+tested with a Goertzel each over a two-second window after decimating to about
+1 kHz, which costs a few hundred thousand operations a second — far less than
+a transform would. Two seconds is not caution, it is resolution: the closest
+pairs in the table are about 2.5 Hz apart and a shorter window smears them
+together. A reading needs two consecutive windows to agree, because a
+transmission that has only just opened often gives one good window and one
+ragged one.
+
+## 13. Automatic direct sampling below the tuner's floor
+
+An R820T cannot tune below roughly 24 MHz. Below that the only way in is the
+ADC's own input — direct sampling — which on an RTL-SDR v3 is wired to the Q
+branch. ABMod switches to it when the receiver is tuned under that floor, and
+back out again when it returns, and marks the state with a **DS** badge beside
+the Set button.
+
+The awkward part is that direct sampling is not a tunable parameter. It is a
+command line option of the connector, while the frequency travels live over
+the control socket, so setting the property alone changes nothing: the
+connector was started with the old value and keeps it. The device therefore has
+to be stopped and started, every listener loses a few seconds of audio, and
+that is announced in the log rather than suffered in silence.
+
+Two details decide whether it works at all:
+
+- **The frequency is written before the mode.** The other way round, the
+  connector comes up on the old frequency in the new mode and then has to be
+  retuned over the control socket — which for a tuner asked to reach 6 MHz
+  never works. Measured before the fix: the receiver ended on 15.001 MHz,
+  neither the frequency it left nor the one it was asked for.
+- **The decision is made on the top of the sampled window, not its centre.** A
+  window centred at 23 MHz reaches up to 24.25 MHz and the tuner can serve all
+  of it. Direct sampling has no filtering in front of it and everything strong
+  folds in, so taking it when the tuner would have done is the worse choice.
+
+Measured on this hardware at 6 and 7 MHz with direct sampling on: discrete
+lines stand **29 dB** above the noise floor, which a disconnected input does
+not produce. An HF antenna is still needed for any of it to be useful.
+
+## 14. DMR identities without the AMBE codec
+
+DMR needs two things, and only one of them is free. digiham, which
+synchronises on the TDMA bursts and extracts both the voice frames and the
+signalling, is in the Debian repository. The AMBE+2 decoder is not:
+codecserver ships a single driver, `libambe3k.so`, and that is not a software
+codec at all — it drives an AMBE-3000 chip over a serial port. Without that
+hardware upstream withdraws the whole mode, signalling included, even though
+the signalling never passes through the codec.
+
+In upstream's own chain the metadata leaves by its own route — the decoder's
+`setMetaWriter`, not the synthesizer's — so a chain that stops at the decoder
+still reports **who is transmitting, on which talkgroup, in which timeslot**,
+resolved against RadioID by the parser that is already there and shown in the
+panel the DMR mode already has. ABMod builds that chain when the codec is
+missing and upstream's full chain when it is present, so an AMBE-3000 dongle
+would turn the audio on with no further change.
+
+What is lost is the audio, and only the audio. That is said in the log when
+the mode is selected, because a mode that normally carries sound and suddenly
+does not looks like a fault. The slot filter, the metadata panel and the
+bandplan entries are untouched: the mode is still `dmr`, with the same name
+and the same bandwidth.
+
+## 15. Smaller things
 
 - **The compiled JavaScript is no longer cached for an hour.** Upstream sends
   the bundles with `Cache-Control: max-age=3600`, which licenses a browser to

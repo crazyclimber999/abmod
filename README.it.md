@@ -88,6 +88,21 @@ ZVEI1, ZVEI2, DZVEI, EIA e CCITT contemporaneamente, con filtro per standard, e
 un decoder **2 toni** che misura la frequenza reale dei toni invece di
 indovinarla da una tabella.
 
+**Toni subaudio.** Il tono **CTCSS** del canale in ascolto, letto dall'audio
+demodulato dove la de-enfasi lo lascia, mostrato sotto la frequenza e scritto
+nel log. Resta finché non se ne sente uno diverso o non si cambia sintonia,
+perché un tono che sparisce con la portante si porta via l'informazione.
+
+**DMR senza il codec AMBE.** Identificativi, talkgroup e timeslot, risolti su
+RadioID. Il modo originale viene ritirato per intero quando manca il
+decodificatore AMBE, ma la segnalazione esce dal decoder di digiham e non passa
+dal codec, quindi c'è ancora da leggere. Senza il vocoder hardware non c'è
+audio, e questo viene detto nel log invece di sembrare un guasto.
+
+**Campionamento diretto, preso da solo.** Si scende sotto il limite del tuner e
+il dispositivo riparte in campionamento diretto; si risale e riparte come
+prima, con un quadratino **DS** accanto al pulsante Set in entrambi i casi.
+
 **Una mappa senza Google.** Leaflet su OpenStreetMap: nessuna chiave API,
 nessun account di fatturazione, niente consegnato ai visitatori. Compreso il
 terminatore giorno/notte, e il selettore di posizione nei settings funziona allo

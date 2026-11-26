@@ -334,9 +334,9 @@ class OpenWebRxReceiverClient(OpenWebRxClient, SdrSourceEventClient):
                                 autohf.adjust(
                                     self.sdr, freq, announce=self.write_log_message
                                 )
-                                # sempre, non solo quando cambia: cosi
-                                # l'indicatore e corretto anche se un altro
-                                # client ha mosso la radio nel frattempo
+                                # Always, not only on a change: that way the
+                                # badge is right even if another client moved
+                                # the radio in the meantime.
                                 self.write_config(
                                     {"direct_sampling": autohf.current_mode(self.sdr)}
                                 )

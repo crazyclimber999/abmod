@@ -534,8 +534,23 @@ class DspManager(SdrSourceEventClient, ClientDemodulatorSecondaryDspEventClient)
             from csdr.chain.analog import Ssb
             return Ssb()
         elif demod == "dmr":
-            from csdr.chain.digiham import Dmr
-            return Dmr(self.props["digital_voice_codecserver"])
+            from owrx.feature import FeatureDetector
+
+            if FeatureDetector().has_requirement("codecserver_ambe"):
+                from csdr.chain.digiham import Dmr
+                return Dmr(self.props["digital_voice_codecserver"])
+            # No AMBE codec on this machine, so there is no voice to be had.
+            # The signalling is a separate output of the same decoder, so the
+            # chain can stop short of the vocoder and still report who is
+            # transmitting. Announced in the log: a mode that normally carries
+            # audio and suddenly does not looks like a fault otherwise.
+            from owrx.module.dmr_meta import DmrMeta
+
+            self.handler.write_log_message(
+                "DMR: no AMBE codec on this receiver, so there is no audio. Radio "
+                "IDs, talkgroups and timeslots are decoded as usual."
+            )
+            return DmrMeta()
         elif demod == "dstar":
             from csdr.chain.digiham import Dstar
             return Dstar(self.props["digital_voice_codecserver"])

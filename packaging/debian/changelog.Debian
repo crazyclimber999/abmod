@@ -1,3 +1,14 @@
+abmod (1.0.11) bullseye; urgency=low
+
+  * Add a DMR mode that works without the AMBE codec: the chain stops at
+    digiham's decoder, so radio IDs, talkgroups and timeslots are still
+    reported, with no audio. Upstream's full chain is still used whenever a
+    codec is present.
+  * Document the CTCSS readout and the automatic direct sampling in the
+    feature list, where they were missing.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Thu, 26 Nov 2026 07:00:00 +0000
+
 abmod (1.0.10) bullseye; urgency=low
 
   * Send the direct sampling state from handleSdrAvailable, so the DS badge

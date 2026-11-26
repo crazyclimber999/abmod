@@ -9,6 +9,33 @@ ABMod è costruito e provato. Le ragioni delle scelte sono in
 Le date sono il giorno in cui la modifica è stata finita e messa su un
 ricevitore vero.
 
+## v1.0.11 — 26 novembre 2026
+
+### Aggiunto
+
+- **DMR senza il codec AMBE: identificativi e talkgroup, senza voce.** Il DMR
+  ha bisogno di due cose, e una sola delle due è gratis. digiham, che si
+  sincronizza sulle trame TDMA e tira fuori sia i pacchetti voce sia la
+  segnalazione, è nei repository Debian. Il decodificatore AMBE+2 no:
+  codecserver ha un unico driver, `libambe3k.so`, che non è affatto un codec
+  software - pilota un chip AMBE-3000 su porta seriale. Senza quell'hardware
+  `MbeSynthesizer.hasAmbe()` è falso, e a quel punto il modo viene ritirato per
+  intero, segnalazione compresa, anche se la segnalazione non passa dal codec.
+
+  Non è obbligatorio che vada così. Nella catena originale i metadati escono
+  per una strada loro - `self.decoder.setMetaWriter(buffer)`, il decoder, non
+  il sintetizzatore - quindi una catena che si ferma al decoder dice ancora chi
+  sta trasmettendo, su quale talkgroup e in quale timeslot, risolto su RadioID
+  dal parser che c'è già e mostrato nel pannello che il modo DMR ha già. ABMod
+  costruisce quella catena quando il codec manca e quella originale quando c'è,
+  così una chiavetta AMBE-3000 accenderebbe l'audio senza altre modifiche. La
+  mancanza di audio viene annunciata nel log del ricevitore, perché un modo che
+  normalmente ha il suono e all'improvviso non ce l'ha sembra un guasto.
+
+  Il filtro dei timeslot, il pannello dei metadati e le voci del piano bande
+  funzionano come prima: il modo resta `dmr`, con lo stesso nome e la stessa
+  larghezza di banda.
+
 ## v1.0.10 — 26 novembre 2026
 
 ### Corretto

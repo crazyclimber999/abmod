@@ -269,7 +269,89 @@ richiesta invece di una per riga.
 Se la lista è cambiata da quando la pagina è stata caricata, lo dice invece di
 dichiarare riuscita una cancellazione di nulla.
 
-## 12. Cose più piccole
+## 12. Lettura del subtono CTCSS
+
+Il tono compare sotto l'indicazione della frequenza e viene scritto nel log, e
+**resta** una volta letto: il CTCSS è una proprietà del canale, non del
+momento, quindi cancellarlo alla caduta della portante vorrebbe dire mostrarlo
+per due secondi e poi togliere proprio l'informazione che serviva. Viene
+sostituito se se ne sente uno diverso e dimenticato quando si cambia sintonia.
+
+Si decodifica **nel browser, sugli stessi campioni che vanno all'altoparlante**.
+Non è una scorciatoia, è il punto in cui il tono sopravvive davvero: la catena
+NFM di OpenWebRX finisce con una de-enfasi, che è un passa-basso, quindi alza
+la parte subaudio invece di toglierla, e in quella catena non c'è nessun
+passa-alto che la elimini. Una radio filtra il CTCSS perché non lo si senta;
+questa no, ed è per questo che c'è ancora qualcosa da misurare.
+
+Misurato su una trasmissione vera: il tono stava **34,7 volte** sopra il fondo
+di rumore intorno, a **0,20 Hz** dai 107,2 Hz nominali. I 39 toni standard
+vengono provati con un Goertzel ciascuno su una finestra di due secondi dopo
+aver decimato a circa 1 kHz, e costano qualche centinaio di migliaia di
+operazioni al secondo, molto meno di una trasformata. I due secondi non sono
+prudenza, sono risoluzione: le coppie più vicine della tabella distano circa
+2,5 Hz e una finestra più corta le impasta. Per dare una lettura servono due
+finestre consecutive d'accordo, perché una trasmissione appena aperta spesso dà
+una finestra buona e una sporca.
+
+## 13. Campionamento diretto automatico sotto il limite del tuner
+
+Un R820T non scende sotto i 24 MHz circa. Più in basso l'unica via d'ingresso è
+quella dell'ADC - il campionamento diretto - che su una RTL-SDR v3 è cablata
+sul ramo Q. ABMod ci passa quando il ricevitore viene sintonizzato sotto quel
+limite e ne esce quando risale, e segnala lo stato con un quadratino **DS**
+accanto al pulsante Set.
+
+La parte scomoda è che il campionamento diretto non è un parametro
+sintonizzabile: è un'opzione della riga di comando del connector, mentre la
+frequenza viaggia dal vivo sul socket di controllo. Scrivere solo la proprietà
+quindi non cambia nulla, perché il connector è partito col valore vecchio e se
+lo tiene. Il dispositivo va fermato e riavviato, chi ascolta perde qualche
+secondo di audio, e questo viene annunciato nel log invece di essere subito in
+silenzio.
+
+Due dettagli decidono se la cosa funziona:
+
+- **La frequenza va scritta prima della modalità.** Al contrario il connector
+  riparte sulla frequenza vecchia con la modalità nuova e va poi risintonizzato
+  sul socket di controllo, cosa che per un tuner a cui si chiedono 6 MHz non
+  funziona mai. Misurato prima della correzione: il ricevitore finiva a 15,001
+  MHz, né dove stava né dove gli era stato chiesto di andare.
+- **La decisione si prende sul bordo alto della finestra campionata, non sul
+  centro.** Una finestra centrata a 23 MHz arriva a 24,25 MHz e il tuner la
+  copre tutta. Il campionamento diretto non ha nessun filtro davanti e tutto
+  quello che è forte ci ripiega dentro, quindi prenderlo dove bastava il tuner
+  è la scelta peggiore.
+
+Misurato su questo hardware a 6 e 7 MHz col campionamento diretto attivo: si
+vedono righe discrete **29 dB** sopra il fondo, cosa che un ingresso scollegato
+non produce. Perché serva a qualcosa resta comunque necessaria un'antenna HF.
+
+## 14. Identificativi DMR senza il codec AMBE
+
+Il DMR ha bisogno di due cose, e una sola delle due è gratis. digiham, che si
+sincronizza sulle trame TDMA e tira fuori sia i pacchetti voce sia la
+segnalazione, è nei repository Debian. Il decodificatore AMBE+2 no: codecserver
+ha un unico driver, `libambe3k.so`, che non è affatto un codec software -
+pilota un chip AMBE-3000 su porta seriale. Senza quell'hardware il modo viene
+ritirato per intero, segnalazione compresa, anche se la segnalazione non passa
+dal codec.
+
+Nella catena originale i metadati escono per una strada loro - il
+`setMetaWriter` del decoder, non quello del sintetizzatore - quindi una catena
+che si ferma al decoder dice ancora **chi sta trasmettendo, su quale talkgroup
+e in quale timeslot**, risolto su RadioID dal parser che c'è già e mostrato nel
+pannello che il modo DMR ha già. ABMod costruisce quella catena quando il codec
+manca e quella originale quando c'è, così una chiavetta AMBE-3000 accenderebbe
+l'audio senza altre modifiche.
+
+Quello che si perde è l'audio, e solo l'audio. Viene detto nel log quando si
+sceglie il modo, perché un modo che normalmente ha il suono e all'improvviso non
+ce l'ha sembra un guasto. Il filtro dei timeslot, il pannello dei metadati e le
+voci del piano bande restano come prima: il modo è sempre `dmr`, con lo stesso
+nome e la stessa larghezza di banda.
+
+## 15. Cose più piccole
 
 - **Il JavaScript compilato non viene più tenuto in cache per un'ora.** Upstream
   invia i bundle con `Cache-Control: max-age=3600`, che autorizza il browser a

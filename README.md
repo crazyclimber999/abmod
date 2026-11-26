@@ -87,6 +87,23 @@ ZVEI2, DZVEI, EIA and CCITT at once, with a per-standard filter, and a
 **2-tone paging** decoder that measures the actual tone frequencies rather than
 guessing from a table.
 
+**Sub-audible tones.** The **CTCSS** tone on the channel you are listening to,
+read out of the demodulated audio where the de-emphasis leaves it, shown under
+the frequency and written to the log. It stays until a different tone is heard
+or you retune, because a tone that vanishes with the carrier takes the
+information with it.
+
+**DMR without the AMBE codec.** Radio IDs, talkgroups and timeslots, resolved
+against RadioID. Upstream withdraws the whole mode when there is no AMBE
+decoder, but the signalling comes out of digiham's decoder and never passes
+through the codec, so it is still there to be read. No audio without the
+hardware vocoder — that part is announced in the log rather than left looking
+like a fault.
+
+**Direct sampling, taken automatically.** Tune below the tuner's floor and the
+device is restarted into direct sampling; come back above it and it is
+restarted out again, with a **DS** badge beside the Set button either way.
+
 **A map without Google.** Leaflet on OpenStreetMap: no API key, no billing
 account, nothing handed to your visitors. Day/night terminator included, and
 the receiver-location picker in the settings works the same way.

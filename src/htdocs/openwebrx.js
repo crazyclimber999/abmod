@@ -28,9 +28,9 @@ var bandwidth;
 var center_freq;
 var fft_size;
 var fft_compression = "none";
-// La compressione dell audio serve anche al rivelatore di subtono, e quella
-// di openwebrx e dichiarata con var dentro il gestore della configurazione,
-// quindi invisibile da qui. Questa e sua.
+// The CTCSS detector needs to know how the audio is compressed. Upstream's own
+// audio_compression is declared with var inside the config handler, so it is
+// invisible from here; this is the detector's own copy.
 var ctcssCompression = "none";
 var fft_codec;
 var waterfall_setup_done = 0;
@@ -699,29 +699,24 @@ var COMPRESS_FFT_PAD_N = 10; //should be the same as in csdr.c
 
 /* ------------------------------------------------------------------ CTCSS */
 
-/* Il subtono viene letto qui, dagli stessi campioni che vanno all'altoparlante.
-   L'ADPCM va decodificato una seconda volta: AudioEngine tiene il suo decoder
-   per se, e un secondo decoder sugli stessi byte costa pochissimo e si
-   risincronizza da solo grazie ai marcatori SYNC che il server inserisce. */
+/* The sub-audible tone is read here, from the same samples that go to the
+   speaker. The ADPCM has to be decoded a second time: AudioEngine keeps its
+   own decoder to itself, and a second decoder over the same bytes costs very
+   little and resynchronises by itself on the SYNC markers the server
+   inserts. */
 
 var ctcssDetector = null;
 var ctcssCodec = null;
 
-function ctcssSpegni() {
-    var $r = $('#openwebrx-ctcss');
-    if ($r.length) $r.hide();
-    if (ctcssDetector) ctcssDetector.clear();
-}
-
-/* La frequenza a cui si sta ascoltando: centro piu scostamento del
- * demodulatore. Serve solo per accorgersi che e cambiata. */
-function ctcssSintonia() {
+/* The frequency being listened to: centre plus the demodulator's offset. Its
+ * only job is to notice that it has changed. */
+function ctcssTunedFrequency() {
     try {
-        var pannello = $('#openwebrx-panel-receiver').demodulatorPanel();
-        var demod = (pannello && pannello.getDemodulator) ? pannello.getDemodulator() : null;
-        var scostamento = (demod && demod.get_offset_frequency) ? demod.get_offset_frequency() : 0;
+        var panel = $('#openwebrx-panel-receiver').demodulatorPanel();
+        var demod = (panel && panel.getDemodulator) ? panel.getDemodulator() : null;
+        var offset = (demod && demod.get_offset_frequency) ? demod.get_offset_frequency() : 0;
         if (typeof center_freq === 'undefined' || center_freq === null) return null;
-        return center_freq + (scostamento || 0);
+        return center_freq + (offset || 0);
     } catch (e) {
         return null;
     }
@@ -729,21 +724,21 @@ function ctcssSintonia() {
 
 function ctcssInit() {
     if (ctcssDetector || typeof CtcssDetector === 'undefined') return;
-    ctcssDetector = new CtcssDetector(function(tono, margine) {
+    ctcssDetector = new CtcssDetector(function(tone, margin) {
         var $r = $('#openwebrx-ctcss');
         var $v = $('#openwebrx-ctcss-value');
-        if (!tono) {
+        if (!tone) {
             $v.html('&mdash;');
             $r.hide();
             return;
         }
-        $v.html(tono.toFixed(1) + ' Hz <span class="ctcss-margine">(' +
-                Math.round(margine) + 'x)</span>');
+        $v.html(tone.toFixed(1) + ' Hz <span class="ctcss-margin">(' +
+                Math.round(margin) + 'x)</span>');
         $r.show();
-        divlog('Sub-audible tone: ' + tono.toFixed(1) + ' Hz on ' +
-               ((ctcssSintonia() || 0) / 1e6).toFixed(4) + ' MHz');
+        divlog('Sub-audible tone: ' + tone.toFixed(1) + ' Hz on ' +
+               ((ctcssTunedFrequency() || 0) / 1e6).toFixed(4) + ' MHz');
     });
-    ctcssDetector.setTunedProbe(ctcssSintonia);
+    ctcssDetector.setTunedProbe(ctcssTunedFrequency);
     if (typeof ImaAdpcmCodec !== 'undefined') ctcssCodec = new ImaAdpcmCodec();
     if (audioEngine && audioEngine.getOutputRate) {
         ctcssDetector.setSampleRate(audioEngine.getOutputRate());
@@ -761,7 +756,7 @@ function ctcssFeed(data) {
             ctcssDetector.push(new Int16Array(data));
         }
     } catch (e) {
-        // un subtono mancato non deve mai fermare l'audio
+        // a missed tone must never be allowed to stop the audio
     }
 }
 

@@ -8,6 +8,35 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
+## v1.0.11 — 2026-11-26
+
+### Added
+
+- **DMR without the AMBE codec: identities and talkgroups, no voice.** DMR
+  needs two things, and only one of them is free. digiham, which synchronises
+  on the TDMA bursts and extracts both the voice frames and the signalling, is
+  in the Debian repository. The AMBE+2 decoder is not: codecserver ships one
+  driver, `libambe3k.so`, and that is not a software codec at all - it drives
+  an AMBE-3000 chip over a serial port. Without the hardware
+  `MbeSynthesizer.hasAmbe()` is false, and upstream then withdraws the whole
+  mode, signalling included, although the signalling never passes through the
+  codec.
+
+  It does not have to go that way. In upstream's own chain the metadata leaves
+  by its own route - `self.decoder.setMetaWriter(buffer)`, the decoder, not the
+  synthesizer - so a chain that stops at the decoder still reports who is
+  transmitting, on which talkgroup and in which timeslot, resolved against
+  RadioID by the existing parser and shown in the panel the DMR mode already
+  has. ABMod builds that chain whenever the codec is missing, and upstream's
+  full chain whenever it is there, so an AMBE-3000 dongle would turn the audio
+  on with no further change. The absence of audio is announced in the
+  receiver's log, because a mode that normally carries sound and suddenly does
+  not looks like a fault.
+
+  The slot filter, the metadata panel and the bandplan entries all work
+  unchanged: the mode is still `dmr`, with the same name and the same
+  bandwidth.
+
 ## v1.0.10 — 2026-11-26
 
 ### Fixed

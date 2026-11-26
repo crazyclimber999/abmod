@@ -37,6 +37,27 @@ class AnalogMode(Mode):
     pass
 
 
+class DigihamMode(AnalogMode):
+    """
+    A digital voice mode that digiham alone can carry.
+
+    Upstream gates all of them behind the "digital_voice_digiham" feature,
+    which is digiham AND an AMBE codec. That is the right test for a mode that
+    has to produce audio, and the wrong one for a mode that only reports who is
+    transmitting: the signalling comes straight out of the decoder and never
+    touches the codec. So the check is made against the one requirement that
+    actually applies.
+
+    has_requirement takes a requirement rather than a feature, which is why
+    this does not go through is_available: there is no feature in the detector's
+    table meaning "digiham on its own", and adding one would mean replacing
+    feature.py, a file ABMod has no other reason to touch.
+    """
+
+    def is_available(self):
+        return FeatureDetector().has_requirement("digiham")
+
+
 class DigitalMode(Mode):
     def __init__(
         self, modulation, name, underlying, bandpass: Bandpass = None, requirements=None, service=False, squelch=True
@@ -99,7 +120,12 @@ class Modes(object):
         AnalogMode("lsb", "LSB", bandpass=Bandpass(-3000, -300)),
         AnalogMode("usb", "USB", bandpass=Bandpass(300, 3000)),
         AnalogMode("cw", "CW", bandpass=Bandpass(700, 900)),
-        AnalogMode("dmr", "DMR", bandpass=Bandpass(-4000, 4000), requirements=["digital_voice_digiham"], squelch=False),
+        # DMR needs digiham for the bursts and an AMBE codec for the voice. With
+        # the codec present dsp.py builds upstream's chain and the mode works in
+        # full; without it, the chain stops at the decoder and the mode reports
+        # identities and talkgroups with no audio. Either way digiham is enough
+        # to offer it, so the test is digiham alone.
+        DigihamMode("dmr", "DMR", bandpass=Bandpass(-4000, 4000), squelch=False),
         AnalogMode(
             "dstar", "D-Star", bandpass=Bandpass(-3250, 3250), requirements=["digital_voice_digiham"], squelch=False
         ),
