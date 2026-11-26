@@ -9,6 +9,35 @@ ABMod è costruito e provato. Le ragioni delle scelte sono in
 Le date sono il giorno in cui la modifica è stata finita e messa su un
 ricevitore vero.
 
+## v1.0.19 — 2026-11-27
+
+### Corretto
+
+- **Il nuovo tentativo aggiunto in 1.0.18 cercava il tipo di morte
+  sbagliato.** Chiedeva a openwebrx se il dispositivo fosse marcato come
+  fallito. Ma un dispositivo può morire senza essere marcato in nessun modo:
+  `start()` affida il processo a un thread di controllo, e quando il processo
+  termina quel thread chiama `fail()` solo se la sorgente era arrivata allo
+  stato RUNNING. Una sorgente morta mentre saliva non ci è mai arrivata,
+  quindi il thread si azzera e lascia il contrassegno dov'era. Una sorgente
+  così non è né fallita né disponibile: `isFailed()` è falso, quindi il
+  tentativo non la guardava più, mentre a ogni client continuava a essere
+  detto «no more SDR devices available». Visto su un ricevitore vero: la radio
+  è stata giù otto minuti e il tentativo al minuto non ha scritto nulla. Ora
+  la domanda posta ogni minuto è se un dispositivo che dovrebbe essere in
+  funzione lo sia davvero, che è la domanda che conta. Un dispositivo che non
+  è always-on è escluso: per lui «non in funzione» è il normale riposo.
+
+- **Un dispositivo morto che teneva ancora il suo processo veniva «riavviato»
+  senza che accadesse niente.** `start()` comincia con `if self.monitor:
+  return`, e quella riga viene prima del controllo sul contrassegno: avviare
+  una sorgente il cui processo connector non era ancora stato raccolto
+  tornava in una frazione di secondo senza aver fatto nulla - e il tentativo,
+  che giudicava il risultato dal contrassegno che aveva azzerato lui stesso un
+  attimo prima, annunciava un ripristino mai avvenuto. Ora un dispositivo così
+  viene prima fermato, cosa che raccoglie il processo e il thread, e il
+  risultato si giudica da se il dispositivo è davvero su.
+
 ## v1.0.18 — 2026-11-26
 
 ### Corretto

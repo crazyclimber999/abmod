@@ -1,3 +1,14 @@
+abmod (1.0.19) bullseye; urgency=low
+
+  * Fix the retry added in 1.0.18. It only noticed a device openwebrx had
+    marked failed, and a device that dies on the way up is left marked nothing
+    at all, so the retry never looked at it again and the receiver stayed down
+    in silence. It now asks whether a device that should be running is
+    running, reaps a dead process before starting a new one, and judges the
+    result by whether the device is actually up.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Fri, 27 Nov 2026 00:20:00 +0000
+
 abmod (1.0.18) bullseye; urgency=low
 
   * Retry an SDR that failed to start, once a minute. openwebrx marks such a

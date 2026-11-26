@@ -8,6 +8,33 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
+## v1.0.19 — 2026-11-27
+
+### Fixed
+
+- **The retry added in 1.0.18 was watching for the wrong kind of death.** It
+  asked openwebrx whether a device was marked failed. A device can also die
+  without being marked anything at all: `start()` hands the process to a
+  monitor thread, and when the process ends that thread calls `fail()` only if
+  the source had reached the RUNNING state. A source that died on the way up
+  never reached it, so the monitor clears itself and leaves the flag alone.
+  Such a source is neither failed nor available: `isFailed()` is False, so the
+  retry never looked at it again, while every client was still told "no more
+  SDR devices available". Seen on a live receiver - the radio was down for
+  eight minutes and the once-a-minute retry logged nothing whatsoever. The
+  question asked each minute is now whether a device that ought to be running
+  is running, which is the question that actually matters. A device that is
+  not always-on is exempt: for it, "not running" is the normal idle state.
+
+- **A dead device that still held its process was "started" without anything
+  happening.** `start()` begins with `if self.monitor: return`, which comes
+  before it looks at the failed flag, so starting a source whose connector
+  process had not yet been reaped returned in a fraction of a second having
+  done nothing - and the retry, judging the outcome by the flag it had itself
+  just cleared, then announced a recovery that had not taken place. Such a
+  device is now stopped first, which reaps the process and the thread, and the
+  outcome is judged by whether the device is genuinely up.
+
 ## v1.0.18 — 2026-11-26
 
 ### Fixed
