@@ -196,6 +196,11 @@ defaultConfig = PropertyLayer(
     aprs_igate_beacon_interval=30,
     aprs_igate_symbol="R&",
     aprs_igate_comment="OpenWebRX APRS gateway",
+    # Parking on the APRS frequency while nobody listens. Off by default: it
+    # moves the receiver by itself, which nobody should discover by surprise.
+    aprs_idle_enabled=False,
+    aprs_idle_freq=144800000,
+    aprs_idle_timeout=10,
     # aprs_igate_height=None,
     # aprs_igate_gain=None,
     # aprs_igate_dir=None,

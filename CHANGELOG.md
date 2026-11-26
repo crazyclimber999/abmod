@@ -8,6 +8,64 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
+## v1.0.12 — 2026-11-26
+
+### Added
+
+- **The receiver can park on the APRS frequency while nobody is listening.**
+  The igate and a listener want the receiver on two different frequencies, and
+  they never want it at the same time: the packet service only runs where a
+  band plan entry for it falls inside the sampled window, so a listener who
+  tunes elsewhere takes the gateway down. With this on, the last listener to
+  leave starts a clock - ten minutes by default - and when it runs out the
+  receiver moves itself to the configured APRS frequency; the moment someone
+  connects it goes back to the centre frequency saved for the profile, before
+  that client is told anything, so what it sees is already true.
+
+  Only the running properties are written, never `settings.json`: a parked
+  receiver that is restarted comes back on its default, which is the right way
+  round for a temporary state. The wait is there because a listener who
+  reloads the page is gone and back within seconds, and parking in between
+  would cost them a device restart.
+
+  Three settings under General settings → APRS: igate, off by default. It
+  needs *Keep device running at all times* on the device, and the module says
+  so in the log rather than parking a radio that is switched off. The cost is
+  stated plainly on the settings page: **any** visitor connecting stops the
+  gateway, not only the operator.
+
+### Fixed
+
+- **DMR produced nothing at all when a digital mode was switched on.** The
+  metadata-only chain ended in a SHORT audio stream, as upstream's digiham
+  chain does - it has an AGC there, which this one does not need.
+  `ClientDemodulatorChain._connect` rebuilds the audio buffer whenever the
+  demodulator's output format changes and hands the new reader to the
+  secondary demodulator; ABMod's 5-tone and 2-tone decoders read audio as
+  FLOAT, so a SHORT buffer made them raise `ValueError: invalid reader format`.
+
+  `Chain.replace` re-raises that, which aborted `setDemodulator` halfway: the
+  old demodulator had already been stopped and swapped for a placeholder, the
+  new one was never attached, and from then on `self.demodulator` was `None` -
+  so the next call failed too, with `AttributeError: 'NoneType' object has no
+  attribute 'setSampleRate'`. The receiver was left with no demodulator at
+  all: no metadata, no audio, and nothing shown on the page.
+
+  The chain now outputs FLOAT, like every analog mode, so the buffer is never
+  rebuilt and nothing is re-wired. Found on a live receiver; the earlier tests
+  had always selected DMR with no secondary mode running, which is the one
+  path that worked.
+
+### Changed
+
+- **The source is in English throughout.** Comments and local names in the
+  bookmark importer, the bulk editor, the terrain and passcode helpers, the
+  CTCSS detector and the receiver panels were still Italian in places. Renames
+  and comments only. The Italian header names in the importer's column guesser
+  stay: those are spreadsheet headings to match, not language. The dead
+  `ctcssSpegni()` is gone, and the `ctcss-margine` CSS class is now
+  `ctcss-margin` in both index.html and openwebrx.js.
+
 ## v1.0.11 — 2026-11-26
 
 ### Added

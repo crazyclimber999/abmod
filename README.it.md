@@ -110,7 +110,10 @@ stesso modo.
 
 **APRS, nei due versi.** Posizioni prese da aprs.fi per le stazioni fuori
 portata — la chiave API resta sul server — e le impostazioni dell'igate APRS-IS
-raccolte in un unico posto accanto a quelle.
+raccolte in un unico posto accanto a quelle. A richiesta il ricevitore si mette
+sulla frequenza APRS quando nessuno ascolta e torna sulla sua frequenza
+centrale salvata appena qualcuno si collega, così il gateway lavora nelle ore
+in cui il ricevitore sarebbe fermo.
 
 ---
 

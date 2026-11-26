@@ -1,3 +1,16 @@
+abmod (1.0.12) bullseye; urgency=low
+
+  * Add the option to park the receiver on the APRS frequency while nobody is
+    listening, and return to the saved centre frequency as soon as someone
+    connects. Off by default.
+  * Fix DMR producing nothing at all when a digital mode was switched on: the
+    metadata chain now outputs FLOAT, so the secondary demodulator can still
+    be wired to the audio buffer.
+  * Put the remaining Italian comments and local names in the source into
+    English.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Thu, 26 Nov 2026 08:30:00 +0000
+
 abmod (1.0.11) bullseye; urgency=low
 
   * Add a DMR mode that works without the AMBE codec: the chain stops at

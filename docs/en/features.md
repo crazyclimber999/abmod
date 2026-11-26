@@ -334,7 +334,41 @@ does not looks like a fault. The slot filter, the metadata panel and the
 bandplan entries are untouched: the mode is still `dmr`, with the same name
 and the same bandwidth.
 
-## 15. Smaller things
+## 15. The gateway runs when nobody is listening
+
+The igate and a listener want the receiver on two different frequencies. The
+packet service only runs where a band plan entry for it falls inside the
+sampled window, so a listener who tunes away from 144.800 takes the gateway
+down with them — which is why that is one of the two things that silently kill
+an igate.
+
+They never want it at the same time, though. Nobody is listening at four in
+the morning, which is exactly when the gateway could be working. So,
+optionally: the last listener to leave starts a clock, ten minutes by default,
+and when it runs out the receiver moves itself to the APRS frequency. The
+moment someone connects it goes back to the centre frequency saved for the
+profile — before that client is told anything, so what it sees is already
+true.
+
+Three things this gets right by construction:
+
+- **Only the running properties are written, never `settings.json`.** A parked
+  receiver that is restarted comes back on its default. The parking is a
+  temporary state, not a configuration, and it behaves like one.
+- **The default is re-read from the configuration when going back**, not
+  remembered from before parking: a visitor may have retuned the receiver and
+  the operator may have saved a new default in the meantime. What the
+  configuration says is what "the default" means.
+- **It refuses to park a radio that is switched off.** Without *Keep device
+  running at all times* the source stops as soon as the last listener leaves,
+  so moving its frequency would achieve nothing. It says so in the log instead.
+
+The cost is real and stated on the settings page: **any** visitor connecting
+stops the gateway, not only the operator. On a busy public receiver that can
+mean it rarely runs. It is off by default, and it starts working from the next
+time the last listener leaves.
+
+## 16. Smaller things
 
 - **The compiled JavaScript is no longer cached for an hour.** Upstream sends
   the bundles with `Cache-Control: max-age=3600`, which licenses a browser to

@@ -68,6 +68,24 @@ class VoiceToSilence(ThreadModule):
     frame, and digiham publishes no header to check that against. Real time is
     the thing actually being matched, so it is measured directly, and the cap
     keeps the first read after a long silence from emitting the whole gap.
+
+    The output is FLOAT, not the SHORT that upstream's digiham chain produces.
+    That is deliberate and it is not cosmetic. ClientDemodulatorChain._connect
+    rebuilds the audio buffer whenever the demodulator's output format changes,
+    and hands the new reader to the secondary demodulator if there is one:
+
+        if self.audioBuffer is None or self.audioBuffer.getFormat() != format:
+            self.audioBuffer = Buffer(format)
+            if self.secondaryDemodulator is not None and ...:
+                self.secondaryDemodulator.setReader(self.audioBuffer.getReader())
+
+    ABMod's 5-tone and 2-tone decoders read audio as FLOAT, so a SHORT buffer
+    made them raise "invalid reader format". Chain.replace re-raises it, which
+    aborted setDemodulator halfway: the demodulator was never installed, the
+    chain was left with none at all, and selecting DMR with a digital mode
+    still switched on produced no metadata and no audio. Measured on a live
+    receiver before this was changed. Every analog mode outputs FLOAT, so
+    matching them means the buffer is never rebuilt and nothing is re-wired.
     """
 
     MAX_CHUNK_S = 0.2
@@ -80,7 +98,7 @@ class VoiceToSilence(ThreadModule):
         return Format.CHAR
 
     def getOutputFormat(self) -> Format:
-        return Format.SHORT
+        return Format.FLOAT
 
     def run(self):
         while self.doRun:
@@ -97,7 +115,8 @@ class VoiceToSilence(ThreadModule):
             samples = int(elapsed * AUDIO_RATE)
             if samples > 0:
                 try:
-                    self.writer.write(bytes(2 * samples))
+                    # four bytes of zero per float sample
+                    self.writer.write(bytes(4 * samples))
                 except Exception:
                     logger.exception("could not write silence")
 

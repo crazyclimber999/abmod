@@ -8,6 +8,7 @@ from owrx.form.input import (
     FloatInput,
     TextAreaInput,
     DropdownInput,
+    ExponentialInput,
     Option,
 )
 from owrx.form.input.converter import WaterfallColorsConverter, IntConverter, OptionalConverter
@@ -283,6 +284,39 @@ class GeneralSettingsController(SettingsFormController):
                     converter=OptionalConverter(),
                 ),
                 DropdownInput("aprs_igate_dir", "Antenna direction", AprsAntennaDirections),
+                # The igate and a listener want the receiver on two different
+                # frequencies, and they never want it at the same time: the
+                # packet service only runs where a band plan entry for it falls
+                # inside the sampled window, so a listener who tunes elsewhere
+                # takes the gateway down. These three let the receiver do both
+                # jobs, each when the other is not needed.
+                CheckboxInput(
+                    "aprs_idle_enabled",
+                    "Park on the APRS frequency when nobody is listening",
+                    infotext="With nobody connected the receiver moves itself to the frequency "
+                    + "below, so the gateway keeps working; the moment someone connects it goes "
+                    + "back to the centre frequency saved for the profile. It needs <em>Keep "
+                    + "device running at all times</em> on the device, otherwise the radio is "
+                    + "simply off with nobody connected. Note that <strong>any</strong> visitor "
+                    + "connecting stops the gateway, not just you.",
+                ),
+                ExponentialInput(
+                    "aprs_idle_freq",
+                    "Idle APRS frequency",
+                    "Hz",
+                    infotext="Where to park. It has to be a frequency the band plan has a "
+                    + "packet entry for, otherwise no service starts there and the receiver "
+                    + "waits on an empty channel. 144.800 MHz in Europe, 144.390 MHz in North "
+                    + "America.",
+                ),
+                NumberInput(
+                    "aprs_idle_timeout",
+                    "Wait before parking",
+                    infotext="A listener who reloads the page is gone and back within seconds, "
+                    + "and parking in between would cost them a device restart. Clamped to "
+                    + "between 1 and 240.",
+                    append="min",
+                ),
             ),
             Section(
                 "Receiving antenna",

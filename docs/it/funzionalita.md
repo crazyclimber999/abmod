@@ -351,7 +351,44 @@ ce l'ha sembra un guasto. Il filtro dei timeslot, il pannello dei metadati e le
 voci del piano bande restano come prima: il modo è sempre `dmr`, con lo stesso
 nome e la stessa larghezza di banda.
 
-## 15. Cose più piccole
+## 15. Il gateway lavora quando nessuno ascolta
+
+L'igate e un ascoltatore vogliono il ricevitore su due frequenze diverse. Il
+servizio packet gira solo dove una voce del piano bande cade dentro la
+finestra campionata, quindi un ascoltatore che si sposta dai 144.800 si porta
+via il gateway — ed è per questo che quella è una delle due cose che spengono
+un igate in silenzio.
+
+Però non le vogliono mai nello stesso momento. Alle quattro del mattino non
+ascolta nessuno, che è esattamente quando il gateway potrebbe lavorare. Quindi,
+a richiesta: l'ultimo ascoltatore che se ne va avvia un orologio, dieci minuti
+per difetto, e alla scadenza il ricevitore si sposta sulla frequenza APRS.
+Appena qualcuno si collega torna sulla frequenza centrale salvata per il
+profilo — prima che a quel client venga detto qualcosa, così quello che vede è
+già vero.
+
+Tre cose che vengono giuste per costruzione:
+
+- **Vengono scritte solo le proprietà in esecuzione, mai `settings.json`.** Un
+  ricevitore parcheggiato che viene riavviato torna sul suo default. Il
+  parcheggio è uno stato temporaneo, non una configurazione, e si comporta come
+  tale.
+- **Il default viene riletto dalla configurazione al ritorno**, non ricordato
+  da prima del parcheggio: nel frattempo un visitatore può aver risintonizzato
+  il ricevitore e chi gestisce la stazione può aver salvato un default nuovo.
+  Quello che dice la configurazione è cosa significa "il default".
+- **Si rifiuta di parcheggiare una radio spenta.** Senza *Keep device running
+  at all times* la sorgente si ferma appena l'ultimo ascoltatore se ne va,
+  quindi spostarle la frequenza non otterrebbe niente. Lo scrive nel log
+  invece di farlo.
+
+Il prezzo è reale ed è scritto nella pagina delle impostazioni: **qualunque**
+visitatore che si collega ferma il gateway, non solo chi gestisce la stazione.
+Su un ricevitore pubblico frequentato può voler dire che gatea poco. È spento
+per difetto, e comincia a funzionare dalla prima volta che l'ultimo ascoltatore
+se ne va.
+
+## 16. Cose più piccole
 
 - **Il JavaScript compilato non viene più tenuto in cache per un'ora.** Upstream
   invia i bundle con `Cache-Control: max-age=3600`, che autorizza il browser a

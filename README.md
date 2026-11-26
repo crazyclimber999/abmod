@@ -110,7 +110,10 @@ the receiver-location picker in the settings works the same way.
 
 **APRS, both directions.** Positions pulled from aprs.fi for stations out of
 your range — the API key stays on the server — and the APRS-IS igate settings
-gathered into one place next to them.
+gathered into one place next to them. Optionally the receiver parks itself on
+the APRS frequency while nobody is listening and returns to its saved centre
+frequency as soon as someone connects, so the gateway works in the hours the
+receiver is otherwise idle.
 
 ---
 

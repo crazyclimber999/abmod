@@ -1,5 +1,5 @@
 from owrx.details import ReceiverDetails
-from owrx import autohf
+from owrx import autohf, idlegate
 from owrx.dsp import DspManager
 from owrx.cpu import CpuUsageThread
 from owrx.sdr import SdrService
@@ -157,6 +157,11 @@ class OpenWebRxReceiverClient(OpenWebRxClient, SdrSourceEventClient):
             self.write_backoff_message("Too many clients")
             self.close()
             raise
+
+        # Before the device is picked and the configuration is assembled: if
+        # the receiver was parked on the APRS frequency this brings it back to
+        # the default first, so what this client is told is already true.
+        idlegate.client_arrived()
 
         self.setupGlobalConfig()
         self.stack = self.setupStack()
@@ -658,6 +663,8 @@ class OpenWebRxReceiverClient(OpenWebRxClient, SdrSourceEventClient):
         self.stopDsp()
         CpuUsageThread.getSharedInstance().remove_client(self)
         ClientRegistry.getSharedInstance().removeClient(self)
+        # after removeClient, so the count this reads does not include us
+        idlegate.client_gone()
         while self.configSubs:
             self.configSubs.pop().cancel()
         if self.bookmarkSub is not None:

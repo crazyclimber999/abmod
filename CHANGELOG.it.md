@@ -9,6 +9,66 @@ ABMod è costruito e provato. Le ragioni delle scelte sono in
 Le date sono il giorno in cui la modifica è stata finita e messa su un
 ricevitore vero.
 
+## v1.0.12 — 26 novembre 2026
+
+### Aggiunto
+
+- **Il ricevitore può mettersi sulla frequenza APRS quando nessuno ascolta.**
+  L'igate e un ascoltatore vogliono il ricevitore su due frequenze diverse, e
+  non le vogliono mai nello stesso momento: il servizio packet gira solo dove
+  una voce del piano bande cade dentro la finestra campionata, quindi un
+  ascoltatore che si sintonizza altrove spegne il gateway. Con questa opzione
+  attiva, l'ultimo ascoltatore che se ne va avvia un orologio - dieci minuti
+  per difetto - e alla scadenza il ricevitore si sposta sulla frequenza APRS
+  configurata; appena qualcuno si collega torna sulla frequenza centrale
+  salvata per il profilo, prima che a quel client venga detto qualcosa, così
+  quello che vede è già vero.
+
+  Vengono scritte solo le proprietà in esecuzione, mai `settings.json`: un
+  ricevitore parcheggiato che viene riavviato torna sul suo default, che è il
+  verso giusto per uno stato temporaneo. L'attesa serve perché un ascoltatore
+  che ricarica la pagina se ne va e torna in pochi secondi, e parcheggiare nel
+  frattempo gli costerebbe un riavvio della chiavetta.
+
+  Tre impostazioni sotto General settings → APRS: igate, spente per difetto.
+  Serve *Keep device running at all times* sul dispositivo, e il modulo lo
+  scrive nel log invece di parcheggiare una radio che è spenta. Il prezzo è
+  detto chiaramente nella pagina: **qualunque** visitatore che si collega
+  ferma il gateway, non solo chi gestisce la stazione.
+
+### Corretto
+
+- **Il DMR non produceva nulla se era acceso un modo digitale.** La catena dei
+  soli metadati finiva con un flusso audio in SHORT, come quella originale di
+  digiham - che lì ha un AGC, pezzo di cui questa non ha bisogno.
+  `ClientDemodulatorChain._connect` ricostruisce il buffer audio ogni volta che
+  cambia il formato d'uscita del demodulatore e passa il nuovo lettore al
+  demodulatore secondario; i decoder 5 e 2 toni di ABMod leggono l'audio in
+  FLOAT, quindi con un buffer in SHORT sollevavano `ValueError: invalid reader
+  format`.
+
+  `Chain.replace` rilancia quell'errore, e `setDemodulator` si interrompeva a
+  metà: il demodulatore vecchio era già stato fermato e sostituito con un
+  segnaposto, quello nuovo non veniva mai agganciato, e da lì in poi
+  `self.demodulator` era `None` - quindi anche la chiamata successiva falliva,
+  con `AttributeError: 'NoneType' object has no attribute 'setSampleRate'`. Il
+  ricevitore restava senza demodulatore: nessun metadato, nessun audio e
+  niente mostrato in pagina.
+
+  Ora la catena esce in FLOAT, come tutti i modi analogici, così il buffer non
+  viene mai ricostruito e non c'è nulla da ricollegare. Trovato su un
+  ricevitore vero: nelle prove precedenti avevo sempre scelto il DMR senza
+  modo secondario attivo, che è l'unico percorso che funzionava.
+
+### Modificato
+
+- **Il sorgente è tutto in inglese.** Commenti e nomi locali nell'importatore
+  delle memorie, nell'editor multiplo, negli aiuti per il terreno e il
+  passcode, nel rivelatore CTCSS e nei pannelli del ricevitore erano ancora in
+  italiano in più punti. Solo rinomine e commenti. Restano in italiano i nomi
+  di intestazione nell'indovino delle colonne dell'importatore: quelli sono
+  intestazioni di fogli di calcolo da riconoscere, non lingua del progetto.
+
 ## v1.0.11 — 26 novembre 2026
 
 ### Aggiunto
