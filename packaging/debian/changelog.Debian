@@ -1,3 +1,12 @@
+abmod (1.0.18) bullseye; urgency=low
+
+  * Retry an SDR that failed to start, once a minute. openwebrx marks such a
+    device failed and never tries it again for the life of the process, so a
+    receiver whose radio is on another machine stayed dead after that machine
+    rebooted. sdr_retry_interval sets the period; 0 switches it off.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Thu, 26 Nov 2026 23:30:00 +0000
+
 abmod (1.0.17) bullseye; urgency=low
 
   * Show everything the radio ID lookup already knows about a DMR caller:

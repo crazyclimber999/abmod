@@ -18,6 +18,11 @@ defaultConfig = PropertyLayer(
     fft_compression="adpcm",
     wfm_deemphasis_tau=50e-6,
     digimodes_fft_size=2048,
+    # How often to give a failed SDR another chance, in seconds. openwebrx
+    # marks a device that would not start as failed and never tries it again,
+    # which is wrong when the radio lives on another machine: there, a failure
+    # usually means that machine was rebooting. 0 switches the retry off.
+    sdr_retry_interval=60,
     digital_voice_dmr_id_lookup=True,
     # Names for DMR talkgroups, from BrandMeister's published list: one
     # download of about 45 kB a week, cached on disk, rather than a request

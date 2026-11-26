@@ -8,6 +8,29 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
+## v1.0.18 — 2026-11-26
+
+### Fixed
+
+- **A radio that failed to start was never tried again.** openwebrx sets a
+  failed flag on such a device and `start()` returns immediately while it is
+  set; nothing anywhere clears it, and `start()` is only ever called from the
+  device's constructor and from `addClient`. So a source that failed stayed
+  dead for the whole life of the process, every client was told "no more SDR
+  devices available", and only restarting openwebrx brought it back.
+
+  That is reasonable when the radio is a USB stick in the same machine: if it
+  did not open, something is wrong that a person should look at. It is the
+  wrong behaviour when the radio is on another machine across a network,
+  where "it did not open" usually means that machine was rebooting or the
+  link blinked - a condition that cures itself in a minute with nobody to see
+  it. The flag is now cleared once a minute and an unattended device is
+  started again, with no restart and no listener disconnected. A device that
+  is not always-on has its flag cleared but is not started: with nobody
+  listening there is nothing to run for, and the next client starts it
+  through the path openwebrx already has. `sdr_retry_interval` sets the
+  period in seconds; 0 switches it off.
+
 ## v1.0.17 — 2026-11-26
 
 ### Added

@@ -9,6 +9,31 @@ ABMod è costruito e provato. Le ragioni delle scelte sono in
 Le date sono il giorno in cui la modifica è stata finita e messa su un
 ricevitore vero.
 
+## v1.0.18 — 2026-11-26
+
+### Corretto
+
+- **Una radio che non era riuscita a partire non veniva più riprovata.**
+  openwebrx marca quel dispositivo come fallito e `start()` esce subito finché
+  quel contrassegno è alzato; non viene azzerato da nessuna parte, e `start()`
+  è chiamato solo dal costruttore del dispositivo e da `addClient`. Quindi una
+  sorgente fallita restava morta per tutta la vita del processo, a ogni client
+  veniva detto «no more SDR devices available», e solo riavviando openwebrx
+  tornava.
+
+  È una scelta ragionevole quando la radio è una chiavetta nella stessa
+  macchina: se non si è aperta, c'è qualcosa che una persona deve guardare. È
+  la scelta sbagliata quando la radio sta su un'altra macchina in rete, dove
+  «non si è aperta» di solito significa che quella macchina si stava
+  riavviando o che il collegamento ha avuto un singhiozzo - una condizione che
+  si risolve da sé in un minuto, senza nessuno che la veda. Ora il
+  contrassegno viene azzerato una volta al minuto e un dispositivo che deve
+  restare acceso viene riavviato, senza riavviare nulla e senza scollegare
+  nessun ascoltatore. Un dispositivo non `always-on` viene liberato ma non
+  avviato: senza ascoltatori non c'è motivo di farlo girare, e il prossimo
+  client lo avvierà per la strada che openwebrx ha già.
+  `sdr_retry_interval` imposta il periodo in secondi; 0 lo disattiva.
+
 ## v1.0.17 — 2026-11-26
 
 ### Aggiunto

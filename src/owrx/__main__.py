@@ -12,6 +12,7 @@ from owrx.config.commands import MigrateCommand
 from owrx.feature import FeatureDetector
 from owrx.sdr import SdrService
 from owrx import idlegate
+from owrx import sourcerevive
 from socketserver import ThreadingMixIn
 from owrx.service import Services
 from owrx.websocket import WebSocketConnection
@@ -128,6 +129,11 @@ Support and info:       https://groups.io/g/openwebrx
     # nobody is connected yet, so start the clock that parks the receiver on
     # the APRS frequency; does nothing unless that rule is switched on
     idlegate.startup()
+
+    # openwebrx never retries a device that failed to start, which is the
+    # wrong behaviour when the radio is on another machine and its absence is
+    # usually temporary
+    sourcerevive.start()
 
     try:
         server = ThreadedHttpServer(("0.0.0.0", coreConfig.get_web_port()), RequestHandler)
