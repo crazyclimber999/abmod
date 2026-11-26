@@ -9,6 +9,30 @@ ABMod è costruito e provato. Le ragioni delle scelte sono in
 Le date sono il giorno in cui la modifica è stata finita e messa su un
 ricevitore vero.
 
+## v1.0.15 — 2026-11-26
+
+### Corretto
+
+- **Una chiavetta servita in rete perdeva il guadagno a ogni riconnessione.**
+  openwebrx lo manda una volta sola, quando avvia il connettore, e il
+  connettore non lo rimanda quando si riaggancia da sé. rtl_tcp azzera il
+  tuner ogni volta che un client si collega, quindi un riavvio del server
+  della chiavetta, un salto del wifi o un cavo staccato lasciavano il
+  ricevitore al guadagno minimo - mentre la pagina delle impostazioni, la
+  configurazione salvata e la riga di comando del connettore continuavano
+  tutte a riportare il valore giusto, il che rendeva il guasto
+  particolarmente ingannevole. Misurato su un ricevitore vero: fondo di
+  rumore fuori centro 14 dB più in basso dopo una riconnessione, senza che
+  nulla fosse stato cambiato.
+
+  Ora il guadagno viene riaffermato sul socket di controllo del connettore
+  ogni trenta secondi, ma solo per i dispositivi `rtl_tcp` e `soapy_remote`,
+  dove l'hardware non è sul bus di questa macchina e può essere riaperto
+  senza che openwebrx se ne accorga. Impostare un tuner al guadagno che ha
+  già non costa niente e non si sente. Un dispositivo in guadagno automatico
+  viene lasciato stare: rimandarlo significherebbe richiedere un modo, non
+  ripristinare un valore.
+
 ## v1.0.14 — 2026-11-26
 
 ### Cambiato

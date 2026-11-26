@@ -8,6 +8,28 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
+## v1.0.15 — 2026-11-26
+
+### Fixed
+
+- **A dongle served over the network lost its gain on every reconnection.**
+  openwebrx sends the gain once, when it starts the connector, and the
+  connector does not send it again when it reconnects by itself. rtl_tcp
+  resets the tuner whenever a client connects, so a restart of the dongle
+  server, a wi-fi blink or a pulled cable left the receiver at minimum
+  gain - while the settings page, the saved configuration and the
+  connector's own command line all still read correctly, which made it a
+  thoroughly confusing fault to look at. Measured on a live receiver: the
+  off-centre noise floor 14 dB down after a reconnection, with nothing
+  changed.
+
+  The gain is now re-asserted over the connector's control socket every 30
+  seconds, but only for `rtl_tcp` and `soapy_remote` devices, where the
+  hardware is not on this machine's own bus and can be re-opened without
+  openwebrx noticing. Setting a tuner to the gain it already has costs
+  nothing and is inaudible. A device set to automatic gain is left alone:
+  re-sending that would be re-asking for a mode, not restoring a value.
+
 ## v1.0.14 — 2026-11-26
 
 ### Changed

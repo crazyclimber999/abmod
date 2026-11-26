@@ -38,4 +38,5 @@ owrx/dsp.py
 owrx/form/input/location.py
 owrx/http.py
 owrx/modes.py
+owrx/source/connector.py
 owrx/users.py

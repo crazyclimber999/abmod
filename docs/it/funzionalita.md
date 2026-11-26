@@ -413,7 +413,31 @@ visitatore che si collega ferma il gateway, non solo chi gestisce la stazione.
 Su un ricevitore pubblico frequentato può voler dire che gatea poco. È spento
 per difetto.
 
-## 16. Cose più piccole
+## 16. Il guadagno sopravvive a una riconnessione
+
+Conta solo quando l'SDR è servito in rete - `rtl_tcp` o `soapy_remote` - e
+allora conta molto.
+
+openwebrx manda il guadagno al connettore una volta sola, quando lo avvia. Il
+connettore non lo rimanda quando si riaggancia da sé, e rtl_tcp azzera il
+tuner ogni volta che un client si collega. Così un riavvio del server della
+chiavetta, un salto del wifi o un cavo staccato lasciano il ricevitore al
+guadagno minimo, e nulla lo dice: la pagina delle impostazioni, la
+configurazione salvata e la riga di comando del connettore riportano tutte
+ancora il valore scelto. L'unico segno è il waterfall che diventa scuro, e
+sembra un problema d'antenna o un preamplificatore morto piuttosto che
+un'impostazione che non è mai arrivata.
+
+Per quei tipi di dispositivo, quindi, il guadagno viene riaffermato sul socket
+di controllo ogni trenta secondi. Impostare un tuner al guadagno che ha già
+non costa niente e non si sente, ed è questo che rende il ripetere la risposta
+giusta invece del rilevare la riconnessione: il rilevamento dovrebbe essere
+affidabile, la ripetizione no.
+
+Un dispositivo in guadagno automatico viene saltato di proposito: rimandare
+`auto` significherebbe richiedere un modo, non ripristinare un valore.
+
+## 17. Cose più piccole
 
 - **Il JavaScript compilato non viene più tenuto in cache per un'ora.** Upstream
   invia i bundle con `Cache-Control: max-age=3600`, che autorizza il browser a

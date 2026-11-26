@@ -1,3 +1,15 @@
+abmod (1.0.15) bullseye; urgency=low
+
+  * Keep the gain asserted on a dongle served over the network. openwebrx
+    sends it once, when it starts the connector, and never again when the
+    connector merely reconnects - and rtl_tcp resets the tuner whenever a
+    client connects. Any reconnection therefore left the receiver at minimum
+    gain with every setting still reading correctly. The gain is now re-sent
+    over the control socket every 30 seconds for rtl_tcp and soapy_remote
+    devices.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Thu, 26 Nov 2026 21:30:00 +0000
+
 abmod (1.0.14) bullseye; urgency=low
 
   * The APRS parking now does nothing unless the igate itself is switched on.

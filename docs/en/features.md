@@ -391,7 +391,30 @@ The cost is real and stated on the settings page: **any** visitor connecting
 stops the gateway, not only the operator. On a busy public receiver that can
 mean it rarely runs. It is off by default.
 
-## 16. Smaller things
+## 16. The gain survives a reconnection
+
+Only matters when the SDR is served over the network - `rtl_tcp` or
+`soapy_remote` - and then it matters a great deal.
+
+openwebrx sends the gain to the connector once, when it starts it. The
+connector does not send it again when it reconnects by itself, and rtl_tcp
+resets the tuner whenever a client connects. So a restart of the dongle
+server, a wi-fi blink or a pulled cable leaves the receiver at minimum gain,
+and nothing says so: the settings page, the saved configuration and the
+connector's own command line all still read the value you chose. The only
+sign is a waterfall gone dark, which looks like an antenna problem or a dead
+preamplifier rather than a setting that never arrived.
+
+So for those device types the gain is re-asserted over the control socket
+every thirty seconds. Setting a tuner to the gain it already has costs
+nothing and is inaudible, which is what makes repeating it the right answer
+rather than detecting the reconnection - the detection would have to be
+reliable, and the repetition does not.
+
+A device left on automatic gain is skipped on purpose: re-sending `auto`
+would be re-asking for a mode rather than restoring a value.
+
+## 17. Smaller things
 
 - **The compiled JavaScript is no longer cached for an hour.** Upstream sends
   the bundles with `Cache-Control: max-age=3600`, which licenses a browser to
