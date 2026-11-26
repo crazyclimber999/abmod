@@ -118,6 +118,15 @@ def _default_frequency(sdr):
         return None
 
 
+def _current_frequency(sdr):
+    """Where the radio is pointing right now."""
+    try:
+        props = sdr.props
+        return int(props["center_freq"]) if "center_freq" in props else None
+    except Exception:
+        return None
+
+
 def _runs_without_listeners(sdr):
     """
     Whether this device keeps running with nobody connected.
@@ -263,10 +272,18 @@ def _park():
         )
         return
 
-    default = _default_frequency(sdr)
-    if default is not None and default == freq:
-        logger.debug("the default centre frequency is already the idle one; nothing to do")
+    # Compared against where the radio is pointing NOW, not against the saved
+    # default. A receiver whose saved default already is the APRS frequency -
+    # the obvious setup for a station that mostly gates - still needs parking
+    # after a visitor has moved the centre away and left, and comparing
+    # against the default would skip exactly that case and leave the gateway
+    # dead until the next restart.
+    current = _current_frequency(sdr)
+    if current is not None and current == freq:
+        logger.debug("already on the APRS frequency; nothing to do")
         return
+
+    default = _default_frequency(sdr)
 
     try:
         logger.info("no listeners: parking on %.4f MHz for APRS", freq / 1e6)

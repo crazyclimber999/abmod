@@ -13,6 +13,13 @@ ricevitore vero.
 
 ### Corretto
 
+- **Un ricevitore che aveva già la frequenza APRS come default salvato non
+  parcheggiava mai.** Se parcheggiare o no si decideva confrontando la
+  frequenza di riposo col default salvato, quindi una stazione con 144.800 come
+  default - cioè l'assetto ovvio per chi gatea la maggior parte del tempo -
+  saltava il parcheggio anche dopo che un visitatore aveva spostato il centro e
+  se n'era andato, e il gateway restava morto fino al riavvio dopo. Ora il
+  confronto è con il punto in cui la radio è davvero puntata.
 - **Tornando dal parcheggio il ricevitore andava sulla frequenza parcheggiata,
   non sul default.** `sdr.props` è una pila il cui livello più alto è l'oggetto
   del profilo, quello che sta dentro la configurazione viva: ogni

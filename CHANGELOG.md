@@ -12,6 +12,13 @@ Dates are the day the change was finished and running on a live receiver.
 
 ### Fixed
 
+- **A receiver whose saved default already was the APRS frequency never
+  parked.** Whether to park was decided by comparing the idle frequency with
+  the saved default, so a station with 144.800 saved as its default - the
+  obvious setup for one that mostly gates - skipped parking even after a
+  visitor had moved the centre away and left, and the gateway stayed dead
+  until the next restart. The comparison is now against where the radio is
+  actually pointing.
 - **Coming back from parking went to the parked frequency, not the default.**
   `sdr.props` is a stack whose top layer is the profile's own object, the one
   that lives inside the live configuration, so every retune - the parking

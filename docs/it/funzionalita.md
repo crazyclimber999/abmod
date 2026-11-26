@@ -390,9 +390,13 @@ Tre cose che vengono giuste per costruzione:
   va. Un ricevitore appena riavviato che nessuno ha ancora visitato è proprio
   quello che dovrebbe gateare, e aspettare che arrivi e se ne vada un
   visitatore prima di parcheggiare sarebbe il contrario di quel che serve.
-- **Un ricevitore che ha già la frequenza APRS come default non fa niente.**
-  Non c'è dove parcheggiare né dove tornare, quindi la regola si tira da parte
-  invece di far ripartire la radio per nulla.
+- **La domanda «ci sono già?» riguarda dove la radio è puntata adesso**, non il
+  default salvato. Una stazione che gatea per la maggior parte del tempo avrà
+  144.800 come default, ed è proprio quel ricevitore che ha bisogno del
+  parcheggio dopo che un visitatore ha spostato il centro e se n'è andato.
+  Confrontare col default salterebbe quel caso e lascerebbe il gateway morto
+  fino al riavvio dopo; confrontare con la frequenza corrente parcheggia quando
+  serve e sta zitto quando il ricevitore è già dove deve stare.
 
 Il prezzo è reale ed è scritto nella pagina delle impostazioni: **qualunque**
 visitatore che si collega ferma il gateway, non solo chi gestisce la stazione.

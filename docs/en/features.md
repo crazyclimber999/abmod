@@ -370,9 +370,13 @@ Three things this gets right by construction:
   receiver that has just been restarted and that nobody has visited since is
   exactly the one that should be gatewaying, and waiting for a visitor to
   arrive and leave again before parking would have it the wrong way round.
-- **A receiver whose default already is the APRS frequency does nothing.**
-  There is nowhere to park and nothing to go back to, so the rule stays out of
-  the way instead of restarting the device for no reason.
+- **"Already there?" is asked of where the radio is pointing now**, not of the
+  saved default. A station that mostly gates will have 144.800 saved as its
+  default, and it is precisely that receiver that needs parking after a visitor
+  has moved the centre away and left. Comparing against the default would skip
+  that case and leave the gateway dead until the next restart; comparing
+  against the current frequency parks when it has to and keeps quiet when the
+  receiver is already where it belongs.
 
 The cost is real and stated on the settings page: **any** visitor connecting
 stops the gateway, not only the operator. On a busy public receiver that can

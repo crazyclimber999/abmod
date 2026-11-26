@@ -1,5 +1,8 @@
 abmod (1.0.13) bullseye; urgency=low
 
+  * Fix the APRS parking never happening on a receiver whose saved default
+    already is the APRS frequency: whether to park is now decided by where the
+    radio is pointing, not by the default.
   * Fix the APRS parking coming back onto the parked frequency instead of the
     saved default: the saved centre frequency is now read from settings.json,
     because retuning writes the live configuration.
