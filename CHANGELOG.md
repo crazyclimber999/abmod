@@ -8,6 +8,42 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
+## v1.0.20 — 2026-11-27
+
+### Fixed
+
+- **A radio that came back was still refused to every client.** Starting the
+  radio again, which is what 1.0.19 did, turns out to be half the job.
+  openwebrx keeps a second and much smaller list beside the devices it knows
+  about - the ones a client may actually be given. A device is dropped from
+  that list the moment it fails and put back only when it is *enabled*,
+  because nothing in openwebrx expects a device to recover by itself. So the
+  revived radio ran beautifully, the log said it was back, and every client
+  was still told "no more SDR devices available" - which is worse than not
+  reviving it at all, because from the inside the receiver looks healthy while
+  it serves nobody. Seen on a live receiver, three minutes of a perfectly
+  running radio that no browser could reach.
+
+  A recovered device is now put back on that list. This is not a liberty taken
+  with somebody else's design: openwebrx decides what belongs there by asking
+  `isEnabled() and not isFailed()`, so the moment the failed flag is down the
+  device belongs there by its own rule, and it is openwebrx's own
+  "this device may be used again" that is called to do it, so the profile list
+  and the service scheduler hear about it the way they expect to.
+
+- **Doing it before the restart also fixes an upstream crash.** The handler
+  that records a failure deletes the device from that list and throws
+  `KeyError` if it has already gone, which is what happens on the second
+  failure in a row - every minute, for as long as the radio stays away. The
+  device is now put back before the radio is started, so a failure always has
+  something to delete.
+
+- **The log no longer announces recoveries that did not happen.** A connector
+  that cannot reach its radio gives up in about a tenth of a second, while
+  openwebrx counts a device as up the instant the process exists; the previous
+  version therefore reported one radio as back ninety milliseconds before it
+  died. The result is now read after a short pause.
+
 ## v1.0.19 — 2026-11-27
 
 ### Fixed

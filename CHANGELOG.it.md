@@ -9,6 +9,45 @@ ABMod è costruito e provato. Le ragioni delle scelte sono in
 Le date sono il giorno in cui la modifica è stata finita e messa su un
 ricevitore vero.
 
+## v1.0.20 — 2026-11-27
+
+### Corretto
+
+- **Una radio che tornava veniva comunque rifiutata a ogni client.**
+  Riavviare la radio, che è quello che faceva la 1.0.19, si è rivelato metà
+  del lavoro. openwebrx tiene un secondo elenco, molto più piccolo, accanto ai
+  dispositivi che conosce: quelli che un client può davvero ricevere. Un
+  dispositivo viene tolto da quell'elenco nell'istante in cui fallisce e vi
+  rientra solo quando viene *abilitato*, perché niente in openwebrx si aspetta
+  che un dispositivo si riprenda da sé. Così la radio risuscitata girava
+  benissimo, il log diceva che era tornata, e a ogni client veniva ancora
+  detto «no more SDR devices available» - che è peggio del non risuscitarla,
+  perché da dentro il ricevitore sembra sano mentre non serve nessuno. Visto
+  su un ricevitore vero: tre minuti di radio perfettamente in funzione che
+  nessun browser riusciva a raggiungere.
+
+  Ora un dispositivo ripristinato viene rimesso in quell'elenco. Non è una
+  libertà presa col disegno di altri: openwebrx decide chi ci appartiene
+  chiedendo `isEnabled() and not isFailed()`, quindi appena il contrassegno di
+  guasto è abbassato il dispositivo ci appartiene per sua stessa regola, ed è
+  il «questo dispositivo si può usare di nuovo» di openwebrx che viene
+  chiamato a farlo, così l'elenco dei profili e lo scheduler dei servizi lo
+  sanno nel modo che si aspettano.
+
+- **Farlo prima del riavvio corregge anche un errore a monte.** Il gestore che
+  registra un guasto cancella il dispositivo da quell'elenco e solleva
+  `KeyError` se non c'è già più, cosa che succede al secondo guasto di fila -
+  ogni minuto, per tutto il tempo che la radio resta via. Ora il dispositivo
+  viene rimesso in elenco prima che la radio venga avviata, così un guasto ha
+  sempre qualcosa da cancellare.
+
+- **Il log non annuncia più ripristini mai avvenuti.** Un connector che non
+  riesce a raggiungere la sua radio si arrende in circa un decimo di secondo,
+  mentre openwebrx considera su un dispositivo nell'istante in cui il processo
+  esiste; la versione precedente ha quindi dichiarato tornata una radio
+  novanta millisecondi prima che morisse. Ora il risultato si legge dopo una
+  breve pausa.
+
 ## v1.0.19 — 2026-11-27
 
 ### Corretto

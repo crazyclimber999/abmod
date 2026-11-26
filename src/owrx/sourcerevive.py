@@ -40,17 +40,41 @@ does nothing whatsoever - it returns in a fraction of a second, having neither
 started anything nor reported a problem. Such a source has to be stopped
 first, which reaps the process and the thread, and only then started.
 
+Starting the radio again is only half of it. openwebrx keeps a second, much
+smaller list beside the devices it knows about: ActiveSdrSources, the ones a
+client may actually be given. A device is dropped from that list the moment it
+fails and is put back only when it is *enabled*, because nothing in openwebrx
+expects a device to recover on its own. Leave it at that and a revived radio
+runs beautifully while every client is still told "no more SDR devices
+available" - which is worse than not reviving it at all, since the receiver
+then looks healthy from the inside while serving nobody.
+
+Re-admitting it is not a liberty: openwebrx decides what belongs on that list
+with `isEnabled() and not isFailed()`, so the moment the failed flag is down
+the device belongs there by openwebrx's own rule. Doing it *before* starting
+the radio also keeps the books straight if the start fails, because the
+handler that records a failure deletes the device from that list and throws
+`KeyError` if it has already gone - an upstream fault that fires on the second
+failure in a row, and one this ordering avoids entirely.
+
 Nothing here restarts openwebrx and nothing disconnects a listener. A receiver
 whose radio went away comes back on its own within a minute of it returning.
 """
 
 import logging
 import threading
+import time
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_INTERVAL = 60
 MIN_INTERVAL = 10
+
+# A connector that cannot reach its radio gives up in about a tenth of a
+# second, and openwebrx counts a device as up the instant the process exists.
+# Waiting a moment before believing it is the difference between a log that
+# says what happened and a log that announces a recovery which already died.
+GRACE = 2
 
 _thread = None
 
@@ -75,7 +99,30 @@ def _interval():
     return max(MIN_INTERVAL, seconds)
 
 
-def _revive(source):
+def _readmit(source, name):
+    """Put a device back on the list clients are served from."""
+    try:
+        from owrx.sdr import SourceStateHandler
+    except Exception:
+        logger.exception("could not import the handler that admits %s", name)
+        return
+
+    # The handler is registered as one of the device's own clients, which is
+    # the only place it can be reached from here. onEnable() is openwebrx's
+    # own way of saying "this device may be used again"; calling it rather
+    # than writing to the list means every subscriber - the profile list, the
+    # service scheduler - hears about it the way it expects to.
+    for client in list(getattr(source, "clients", []) or []):
+        if isinstance(client, SourceStateHandler):
+            try:
+                client.onEnable()
+            except Exception:
+                logger.exception("could not put %s back on the list", name)
+            return
+    logger.debug("%s has no state handler, so there is no list to put it on", name)
+
+
+def _revive(source, listed=True):
     """Bring one source back, if it is down and ought not to be."""
     name = "unknown"
     try:
@@ -96,6 +143,12 @@ def _revive(source):
         return
 
     if available and not failed:
+        if not listed:
+            logger.info(
+                "%s is running but had fallen off the list clients are served "
+                "from: putting it back", name
+            )
+            _readmit(source, name)
         return  # running, or on its way up
 
     if not failed and not always_on:
@@ -127,6 +180,12 @@ def _revive(source):
         logger.exception("could not clear the failed flag on %s", name)
         return
 
+    # The flag is down, so by openwebrx's own rule the device belongs on the
+    # list again - and if the start below fails, the handler that records the
+    # failure needs to find it there.
+    if not listed:
+        _readmit(source, name)
+
     if not always_on:
         logger.debug(
             "%s is allowed to start again, and will as soon as a listener asks "
@@ -141,11 +200,13 @@ def _revive(source):
         logger.exception("could not start %s", name)
         return
 
-    # Judge the result by isAvailable(), not by the failed flag: the flag was
-    # cleared by hand a moment ago, so it says nothing, while isAvailable() is
-    # the monitor thread that this start either created or did not. Reading the
-    # flag here is what made the first version of this file announce a recovery
-    # that had not happened.
+    time.sleep(GRACE)
+
+    # Judge the result by isAvailable() after the grace period, not by the
+    # failed flag: the flag was cleared by hand a moment ago, so it says
+    # nothing, while isAvailable() is the monitor thread that this start either
+    # created or did not. Reading the flag straight away is what made the first
+    # version of this file announce a recovery that had not happened.
     try:
         if source.isAvailable() and not source.isFailed():
             logger.info("%s is back", name)
@@ -170,12 +231,19 @@ def _loop(stop: threading.Event):
             from owrx.sdr import SdrService
 
             sources = SdrService.getAllSources()
+            active = SdrService.getActiveSources()
         except Exception:
             logger.exception("could not list the sdr devices")
             continue
-        for source in list(sources.values()):
+        for key, source in list(sources.items()):
             try:
-                _revive(source)
+                # Assume it is listed if the question cannot be answered: a
+                # needless re-admission is a worse guess than none.
+                try:
+                    listed = key in active
+                except Exception:
+                    listed = True
+                _revive(source, listed)
             except Exception:
                 logger.exception("could not look after one of the sdr devices")
 

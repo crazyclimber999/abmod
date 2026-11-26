@@ -1,3 +1,14 @@
+abmod (1.0.20) bullseye; urgency=low
+
+  * A radio brought back by the retry was still refused to every client:
+    openwebrx drops a failed device from the list clients are served from and
+    only ever puts it back when the device is enabled. A recovered device is
+    now re-admitted, which also stops the upstream KeyError thrown when a
+    device fails twice in a row, and a recovery is confirmed after a short
+    pause rather than announced before the radio has had time to die.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Fri, 27 Nov 2026 01:10:00 +0000
+
 abmod (1.0.19) bullseye; urgency=low
 
   * Fix the retry added in 1.0.18. It only noticed a device openwebrx had
