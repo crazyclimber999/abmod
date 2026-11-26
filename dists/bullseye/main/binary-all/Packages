@@ -6,10 +6,10 @@ Installed-Size: 776
 Depends: openwebrx (>= 1.2.2), openwebrx (<< 1.2.3), python3, python3-numpy
 Recommends: python3-xlrd
 Filename: pool/main/abmod_1.0.11_all.deb
-Size: 131672
-MD5sum: 83ea23f4111268c5855dd7e0659d7997
-SHA1: ac957c24e5cf32c9b7b97215a5fd04e1f7e5eb22
-SHA256: b879b9f08d321b72be27e23317ef4ceaa789fc93ce8ecb64b427f757a0439002
+Size: 131844
+MD5sum: e0e8258c0d4c397bd7233e7cd5843670
+SHA1: ee14171f33b18302ae01c981e2c6e7e0c43260bd
+SHA256: 34411d4eec8cf4b59a470d8a5f982929b6bf3d376ede2da09c0ce19e2a21f1d2
 Section: hamradio
 Priority: optional
 Homepage: https://www.iu2qda.it
