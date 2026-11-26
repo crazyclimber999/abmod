@@ -302,7 +302,30 @@ potrebbe solo produrre una lettura falsa e una riga di log che afferma una
 cosa impossibile. Passando a uno di quei modi il valore viene cancellato
 invece di restare scritto.
 
-## 13. Campionamento diretto automatico sotto il limite del tuner
+## 13. Le chiamate DMR dicono chi e dove
+
+Due cose, entrambe su come si legge una chiamata, non su come si decodifica.
+
+L'interrogazione del database degli identificativi scaricava già il record
+intero del chiamante - cognome, città, stato, paese - e il pannello mostrava
+solo il nome di battesimo. Ora mostra il resto. Nessuna richiesta nuova: i dati
+arrivavano e venivano buttati.
+
+I talkgroup hanno un nome, quindi una chiamata si legge `222 (Italia)` e non
+come un numero nudo. Il numero resta, perché è quello con cui si programma una
+radio. I nomi vengono dall'elenco pubblicato da BrandMeister, circa 1850 voci
+in 45 kB, scaricato una volta la settimana e messo in cache su disco - mai nel
+percorso che segue un pacchetto di metadati, perché un nome è una comodità e
+aspettare la rete per averlo ritarderebbe la cosa che deve decorare. Finché
+l'elenco non arriva, le chiamate mostrano il numero, come hanno sempre fatto.
+
+Vengono nominate solo le chiamate di gruppo. In una chiamata diretta il target
+è l'identificativo di qualcuno, e nominarlo da una tabella di talkgroup
+sarebbe sbagliato, non solo inutile.
+
+`digital_voice_dmr_talkgroup_lookup` lo disattiva e non scarica niente.
+
+## 14. Campionamento diretto automatico sotto il limite del tuner
 
 Un R820T non scende sotto i 24 MHz circa. Più in basso l'unica via d'ingresso è
 quella dell'ADC - il campionamento diretto - che su una RTL-SDR v3 è cablata
@@ -335,7 +358,7 @@ Misurato su questo hardware a 6 e 7 MHz col campionamento diretto attivo: si
 vedono righe discrete **29 dB** sopra il fondo, cosa che un ingresso scollegato
 non produce. Perché serva a qualcosa resta comunque necessaria un'antenna HF.
 
-## 14. Identificativi DMR senza il codec AMBE
+## 15. Identificativi DMR senza il codec AMBE
 
 Il DMR ha bisogno di due cose, e una sola delle due è gratis. digiham, che si
 sincronizza sulle trame TDMA e tira fuori sia i pacchetti voce sia la
@@ -359,7 +382,7 @@ ce l'ha sembra un guasto. Il filtro dei timeslot, il pannello dei metadati e le
 voci del piano bande restano come prima: il modo è sempre `dmr`, con lo stesso
 nome e la stessa larghezza di banda.
 
-## 15. Il gateway lavora quando nessuno ascolta
+## 16. Il gateway lavora quando nessuno ascolta
 
 L'igate e un ascoltatore vogliono il ricevitore su due frequenze diverse. Il
 servizio packet gira solo dove una voce del piano bande cade dentro la
@@ -421,7 +444,7 @@ visitatore che si collega ferma il gateway, non solo chi gestisce la stazione.
 Su un ricevitore pubblico frequentato può voler dire che gatea poco. È spento
 per difetto.
 
-## 16. Il guadagno sopravvive a una riconnessione
+## 17. Il guadagno sopravvive a una riconnessione
 
 Conta solo quando l'SDR è servito in rete - `rtl_tcp` o `soapy_remote` - e
 allora conta molto.
@@ -445,7 +468,7 @@ affidabile, la ripetizione no.
 Un dispositivo in guadagno automatico viene saltato di proposito: rimandare
 `auto` significherebbe richiedere un modo, non ripristinare un valore.
 
-## 17. Cose più piccole
+## 18. Cose più piccole
 
 - **Il JavaScript compilato non viene più tenuto in cache per un'ora.** Upstream
   invia i bundle con `Cache-Control: max-age=3600`, che autorizza il browser a

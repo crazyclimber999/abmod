@@ -287,7 +287,29 @@ Looking there could only produce a false reading and a line in the log
 asserting something that cannot be true. Switching to one of those modes
 clears the display rather than leaving the last tone on screen.
 
-## 13. Automatic direct sampling below the tuner's floor
+## 13. DMR calls say who and where
+
+Two things, both about reading a call rather than decoding it.
+
+The radio ID lookup was already fetching the caller's whole record - surname,
+town, state, country - and the panel showed only the first name. It now shows
+the rest. No new request: the data had been arriving and being discarded.
+
+Talkgroups have names, so a call reads `222 (Italia)` rather than a bare
+number. The number stays, because that is what a radio is programmed with. The
+names come from BrandMeister's published list, about 1850 of them in some
+45 kB, downloaded once a week and cached on disk - never in the path a
+metadata frame takes, because a name is a convenience and waiting on the
+network for one would delay the thing it decorates. Until the list arrives,
+calls show the number, as they always did.
+
+Only group calls are named. On a direct call the target is somebody's radio
+ID, and naming that from a talkgroup table would be wrong rather than merely
+unhelpful.
+
+`digital_voice_dmr_talkgroup_lookup` turns it off and fetches nothing.
+
+## 14. Automatic direct sampling below the tuner's floor
 
 An R820T cannot tune below roughly 24 MHz. Below that the only way in is the
 ADC's own input — direct sampling — which on an RTL-SDR v3 is wired to the Q
@@ -318,7 +340,7 @@ Measured on this hardware at 6 and 7 MHz with direct sampling on: discrete
 lines stand **29 dB** above the noise floor, which a disconnected input does
 not produce. An HF antenna is still needed for any of it to be useful.
 
-## 14. DMR identities without the AMBE codec
+## 15. DMR identities without the AMBE codec
 
 DMR needs two things, and only one of them is free. digiham, which
 synchronises on the TDMA bursts and extracts both the voice frames and the
@@ -342,7 +364,7 @@ does not looks like a fault. The slot filter, the metadata panel and the
 bandplan entries are untouched: the mode is still `dmr`, with the same name
 and the same bandwidth.
 
-## 15. The gateway runs when nobody is listening
+## 16. The gateway runs when nobody is listening
 
 The igate and a listener want the receiver on two different frequencies. The
 packet service only runs where a band plan entry for it falls inside the
@@ -399,7 +421,7 @@ The cost is real and stated on the settings page: **any** visitor connecting
 stops the gateway, not only the operator. On a busy public receiver that can
 mean it rarely runs. It is off by default.
 
-## 16. The gain survives a reconnection
+## 17. The gain survives a reconnection
 
 Only matters when the SDR is served over the network - `rtl_tcp` or
 `soapy_remote` - and then it matters a great deal.
@@ -422,7 +444,7 @@ reliable, and the repetition does not.
 A device left on automatic gain is skipped on purpose: re-sending `auto`
 would be re-asking for a mode rather than restoring a value.
 
-## 17. Smaller things
+## 18. Smaller things
 
 - **The compiled JavaScript is no longer cached for an hour.** Upstream sends
   the bundles with `Cache-Control: max-age=3600`, which licenses a browser to

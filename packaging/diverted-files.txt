@@ -11,6 +11,7 @@
 htdocs/include/header.include.html
 htdocs/index.html
 htdocs/lib/DemodulatorPanel.js
+htdocs/lib/MetaPanel.js
 htdocs/lib/settings/MapInput.js
 htdocs/map.html
 htdocs/map.js
@@ -37,6 +38,7 @@ owrx/controllers/websocket.py
 owrx/dsp.py
 owrx/form/input/location.py
 owrx/http.py
+owrx/meta.py
 owrx/modes.py
 owrx/source/connector.py
 owrx/users.py

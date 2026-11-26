@@ -9,6 +9,30 @@ ABMod è costruito e provato. Le ragioni delle scelte sono in
 Le date sono il giorno in cui la modifica è stata finita e messa su un
 ricevitore vero.
 
+## v1.0.17 — 2026-11-26
+
+### Aggiunto
+
+- **Di un chiamante DMR si vede ora quello che il database degli identificativi
+  sa di lui**: cognome, città, stato e paese, non solo il nome di battesimo.
+  Niente di tutto questo ha richiesto una nuova interrogazione: il record
+  intero arrivava già a ogni chiamata e tutti i campi tranne uno venivano
+  buttati via. Una radio portatile con la lista contatti li mostra tutti, e non
+  c'era motivo perché un ricevitore web ne mostrasse meno. I campi mancanti
+  vengono omessi invece di comparire come spazi vuoti, e una voce che ripete il
+  paese nel campo stato non viene mostrata come «Italy, Italy».
+- **I talkgroup hanno un nome**, quindi una chiamata si legge `222 (Italia)` e
+  non come un numero nudo. Il numero resta, perché è quello con cui si programma
+  una radio; il nome gli sta accanto. I nomi vengono dall'elenco pubblicato da
+  BrandMeister - circa 1850 voci in 45 kB - scaricato una volta la settimana e
+  messo in cache su disco, mai nel percorso che segue un pacchetto di metadati:
+  un nome è una comodità, e aspettare la rete per averlo ritarderebbe la cosa
+  che deve decorare. Finché l'elenco non arriva le chiamate mostrano il numero,
+  come facevano prima. Vengono nominate solo le chiamate di gruppo: in una
+  chiamata diretta il target è l'identificativo di qualcuno, e nominarlo da una
+  tabella di talkgroup sarebbe sbagliato, non solo inutile.
+  `digital_voice_dmr_talkgroup_lookup` disattiva tutto.
+
 ## v1.0.16 — 2026-11-26
 
 ### Corretto

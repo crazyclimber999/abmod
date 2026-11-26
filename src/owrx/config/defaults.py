@@ -19,6 +19,10 @@ defaultConfig = PropertyLayer(
     wfm_deemphasis_tau=50e-6,
     digimodes_fft_size=2048,
     digital_voice_dmr_id_lookup=True,
+    # Names for DMR talkgroups, from BrandMeister's published list: one
+    # download of about 45 kB a week, cached on disk, rather than a request
+    # per call. Set it to False to show bare numbers and fetch nothing.
+    digital_voice_dmr_talkgroup_lookup=True,
     digital_voice_nxdn_id_lookup=True,
     sdrs=PropertyLayer(
         rtlsdr=PropertyLayer(

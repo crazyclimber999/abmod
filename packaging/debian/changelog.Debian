@@ -1,3 +1,15 @@
+abmod (1.0.17) bullseye; urgency=low
+
+  * Show everything the radio ID lookup already knows about a DMR caller:
+    surname, town, state and country, not just the first name. The data was
+    arriving and being discarded.
+  * Name DMR talkgroups, so a call reads "222 (Italia)" rather than a bare
+    number. The names come from BrandMeister's published list, one download of
+    about 45 kB a week, cached on disk, never in the path a metadata frame
+    takes. Set digital_voice_dmr_talkgroup_lookup to false to fetch nothing.
+
+ -- IU2QDA <iu2qda@users.noreply.github.com>  Thu, 26 Nov 2026 22:45:00 +0000
+
 abmod (1.0.16) bullseye; urgency=low
 
   * Stop looking for a sub-audible tone on modes that cannot carry one. CTCSS

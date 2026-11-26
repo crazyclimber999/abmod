@@ -8,6 +8,29 @@ is built and tested against. The reasoning behind each choice is in
 
 Dates are the day the change was finished and running on a live receiver.
 
+## v1.0.17 — 2026-11-26
+
+### Added
+
+- **A DMR caller now shows what the radio ID database knows about them** -
+  surname, town, state and country, not only the first name. None of this
+  needed a new lookup: the whole record was already arriving with every call
+  and all but one field was being thrown away. A hand-held radio with a
+  contact list shows the lot, and there was no reason for a web receiver to
+  show less. Missing fields are left out rather than printed as gaps, and an
+  entry that repeats the country in its state field is not shown as
+  "Italy, Italy".
+- **Talkgroups have names**, so a call reads `222 (Italia)` instead of a bare
+  number. The number stays, because that is what a radio is programmed with;
+  the name sits beside it. The names come from BrandMeister's published list -
+  about 1850 of them in some 45 kB - downloaded once a week and cached on
+  disk, never in the path a metadata frame takes: a name is a convenience, and
+  waiting on the network for one would delay the thing it decorates. Until the
+  list arrives, calls show the number, which is what they showed before. Only
+  group calls are named: on a direct call the target is somebody's radio ID,
+  and naming that from a talkgroup table would be wrong rather than merely
+  unhelpful. `digital_voice_dmr_talkgroup_lookup` turns the whole thing off.
+
 ## v1.0.16 — 2026-11-26
 
 ### Fixed
