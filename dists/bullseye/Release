@@ -5,10 +5,10 @@ Codename: bullseye
 Architectures: all
 Components: main
 Description: ABMod packages for OpenWebRX
-Date: Thu, 26 Nov 2026 05:53:24 +0000
+Date: Thu, 26 Nov 2026 13:52:03 +0000
 MD5Sum:
- fabd1664cc208146b4c77c65be8fb18e             1430 main/binary-all/Packages
- 1aced76fa1f22928eb556d37ecb5cf11              875 main/binary-all/Packages.gz
+ 9514bda969427dcd674bd1217185edb3             1430 main/binary-all/Packages
+ 7e7bb3d454c7167e8f80bbd1de42e6f9              875 main/binary-all/Packages.gz
 SHA256:
- 3dc03b21f5ebcae682ab8552bbd3b8b90705cf61c924a727b33e762e5ba76ee2             1430 main/binary-all/Packages
- 26c13777ca3dbae14482b5232de60836944cacfc88a870ab4965226bb86dd958              875 main/binary-all/Packages.gz
+ a5b2627c4126be85b7538ecb3193ad6132082ef266b629f59dc85a4b4dd19982             1430 main/binary-all/Packages
+ 188b1a79e2b1ba39cab1f5c33abea5f4da5e9cd6f0f80a6be11c59ec12c091f2              875 main/binary-all/Packages.gz
